@@ -1,0 +1,141 @@
+<script type="text/javascript">
+    RED.nodes.registerType('directory-action', {
+        category : 'storage',
+        color    : 'burlywood',
+        defaults : {
+            name       : { value : ""},
+            dynamic    : { value : false},
+            action     : {
+                value    : "list",
+                validate : function(v) {
+                    if ($("#node-input-dynamic").length ? $("#node-input-dynamic").prop("checked") : this.dynamic)
+                        return true;
+                    return !!v && v.trim() !== "";
+                }
+            },
+            target     : {
+                value    : "",
+                validate : function(v) {
+                    if ($("#node-input-dynamic").length ? $("#node-input-dynamic").prop("checked") : this.dynamic)
+                        return true;
+                    if (!v || v.trim() === "") return false;
+
+                    var builtInValidator = RED.validators.typedInput("targetType");
+                    return builtInValidator.call(this, v);
+                }
+            },
+            targetType : { value : "str"},
+        },
+
+        inputs  : 1,
+        outputs : 1,
+        icon    : "font-awesome/fa-folder-o",
+        label   : function() {
+            return this.name || (!this.dynamic ? (this.action + " " + this.target).trim() : "directory-action");
+        },
+
+        oneditprepare: function() {
+            $("#node-input-target").typedInput({
+                default   : 'str',
+                types     : ['msg', 'flow', 'global', 'str', 'jsonata', 'env'],
+                typeField : $("#node-input-targetType")
+            });
+
+            $("#node-input-dynamic").on("change", function() {
+                if ($(this).prop("checked")) {
+                    $("#row-action").hide();
+                    $("#row-target").hide();
+                } else {
+                    $("#row-action").show();
+                    $("#row-target").show();
+                }
+
+                $("#node-input-target").trigger("change");
+            });
+
+            $("#node-input-dynamic").trigger("change");
+        }
+    });
+</script>
+
+
+<script type="text/html" data-template-name="directory-action">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span>Name</span></label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-dynamic">&nbsp;</label>
+        <input type="checkbox" id="node-input-dynamic" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-dynamic" style="width: 70%;"><i class="fa fa-usb"></i> Load from msg.file</label>
+    </div>
+    <div class="form-row" id="row-action">
+        <label for="node-input-action"><i class="fa fa-tasks"></i> Action</label>
+        <select id="node-input-action" style="width: 70%">
+            <option value="create">Create</option>
+            <option value="delete">Delete</option>
+            <option value="list">List Contents</option>
+        </select>
+    </div>
+    <div class="form-row" id="row-target">
+        <label for="node-input-target"><i class="fa fa-folder"></i> Target</label>
+        <input type="text" id="node-input-target" placeholder="Path to directory">
+        <input type="hidden" id="node-input-targetType">
+    </div>
+</script>
+
+
+<script type="text/markdown" data-help-name="directory-action">
+A node to create, delete, or list the contents of directories on the file system.
+
+### Properties
+
+* **Load from msg.file** *boolean*\
+  If enabled, the node will ignore the UI properties and expect `msg.file.action` and `msg.file.path` to be provided dynamically.
+
+* **Action** *dropdown*\
+  The operation to perform: Create, Delete, or List Contents.
+
+* **Target** *string | msg*\
+  The absolute path to the directory you want to operate on.
+
+---
+
+### Inputs
+
+* **msg.file** *object*\
+  The incoming message triggers the operation.
+
+* **msg.file.action** *string*\
+  The action to execute if triggered dynamically (`create`, `delete`, or `list`).
+
+* **msg.file.path** *string*\
+  The destination path of the directory.
+
+### Outputs
+
+* **msg.payload** *array | boolean*\
+  * **List**: Returns an array of strings representing the files and folders inside the target directory.
+  * **Create / Delete**: Returns `true` on success.
+
+* **msg.file** *object*\
+  The object containing the event details.
+
+* **msg.file.filetype** *string*\
+  The type of item that triggered the event (`directory`).
+
+* **msg.file.path** *string*\
+  The complete, normalized "absolute" path to the directory.
+
+* **msg.file.dir** *string*\
+  The "absolute" path to the parent directory.
+
+* **msg.file.base** *string*\
+  The name of the directory.
+
+* **msg.file.name** *string*\
+  The name of the directory.
+
+* **msg.file.contents** *array*\
+  An array containing the filenames inside the directory if the action was `List Contents`.
+</script>

@@ -1,0 +1,16 @@
+{
+  "name": "@faigle/node-red-contrib-directory",
+  "version": "0.0.1",
+  "description": "directories also diserve some attetion",
+
+  "private": false,
+  "license": "MIT",
+
+  "node-red": {
+    "nodes": {
+      "dir-action"   : "src/directory-action.js",
+      "dir-transfer" : "src/directory-transfer.js",
+      "dir-watch"    : "src/directory-watch.js"
+    }
+  }
+}
