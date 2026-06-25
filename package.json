@@ -1,6 +1,6 @@
 {
   "name": "@faigle/node-red-contrib-directory",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "directories also diserve some attetion",
   "keywords": [
     "node-red"
