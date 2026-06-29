@@ -1,6 +1,6 @@
 {
   "name": "@faigle/node-red-contrib-directory",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "directories also diserve some attetion",
   "keywords": [
     "node-red"
@@ -31,7 +31,7 @@
     "prettier": "^3.8.4"
   },
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "npx --yes husky",
     "test": "mocha \"test/**/*_spec.js\"",
     "format": "prettier --write \"**/*.{js,html,md}\"",
     "lint": "eslint \"**/*.{js,html}\""
