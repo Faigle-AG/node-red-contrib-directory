@@ -2,6 +2,8 @@
 
 This package provides a suite of Node-RED nodes for managing, transferring, and monitoring file system directories.
 
+This node was generated from [node-red-contrib-template](https://github.com/Faigle-AG/node-red-contrib-_template_).
+
 ## 1. directory-action (`dir-action`)
 
 A node to create, delete, or list the contents of directories on the file system.
