@@ -1,73 +1,254 @@
 # @faigle/node-red-contrib-directory
 
-This package provides a suite of Node-RED nodes for managing, transferring, and monitoring file system directories.
+Node-RED nodes for working with filesystem directories.
 
-This node was generated from [node-red-contrib-template](https://github.com/Faigle-AG/node-red-contrib-_template_).
+This package provides three storage nodes for common directory operations:
 
-## 1. directory-action (`dir-action`)
+- **directory-action** — create, delete, or list directories
+- **directory-transfer** — move, rename, copy, or delete directories
+- **directory-watch** — watch directories for file and directory changes
 
-A node to create, delete, or list the contents of directories on the file system.
+This package was generated from [node-red-contrib-template](https://github.com/Faigle-AG/node-red-contrib-_template_).
 
-### Properties
+## Nodes
 
-- **Load from msg.file**: If enabled, the node ignores UI properties and expects dynamic input.
-- **Action**: The operation to perform (Create, Delete, or List Contents).
-- **Target**: The absolute path to the directory.
+### directory-action
 
-### Inputs (Dynamic)
+Creates a directory, deletes a directory recursively, or lists directory contents.
 
-If _Load from msg.file_ is enabled:
+Supported actions:
 
-- `msg.file.action` _(string)_: `create`, `delete`, or `list`.
-- `msg.file.path` _(string)_: The destination path.
+- `create`
+- `delete`
+- `list`
 
-### Outputs
+Dynamic input example:
 
-- `msg.payload` _(array | boolean)_: Array of strings for List; `true` for Create/Delete on success.
-- `msg.file` _(object)_: Event details containing `filetype`, `path`, `dir`, `base`, `name`, and `contents` (if listed).
+```js
+msg.file = {
+    action: 'list',
+    path: '/tmp/example',
+};
+return msg;
+```
+
+For `list`, the directory contents are returned as:
+
+```js
+msg.payload;
+msg.file.contents;
+```
+
+For `create` and `delete`, `msg.payload` is set to `true` on success.
+
+Output metadata is written to `msg.file`:
+
+```js
+msg.file = {
+    filetype: 'directory',
+    path: '/tmp/example',
+    dir: '/tmp',
+    base: 'example',
+    name: 'example',
+    ext: '',
+    contents: ['file.txt', 'subfolder'],
+};
+```
+
+> `directory-action` delete uses recursive removal.
 
 ---
 
-## 2. directory-transfer (`dir-transfer`)
+### directory-transfer
 
-A node to move, rename, copy, or delete directories.
+Moves, renames, copies, or deletes directories.
 
-### Properties
+Supported actions:
 
-- **Load from msg.file**: If enabled, the node expects dynamic input.
-- **Action**: Move / Rename, Copy, or Delete (Empty Only).
-- **Source**: The absolute path to the origin directory.
-- **Destination**: The absolute path for the new location (hidden for Delete).
+- `move`
+- `copy`
+- `delete`
 
-### Inputs (Dynamic)
+Dynamic copy example:
 
-If _Load from msg.file_ is enabled:
+```js
+msg.file = {
+    action: 'copy',
+    source: '/tmp/source-folder',
+    destination: '/tmp/archive/source-folder',
+};
+return msg;
+```
 
-- `msg.file.action` _(string)_: `move`, `copy`, or `delete`.
-- `msg.file.source` _(string)_: The original absolute path.
-- `msg.file.destination` _(string)_: The destination absolute path.
+Dynamic move / rename example:
 
-### Outputs
+```js
+msg.file = {
+    action: 'move',
+    source: '/tmp/source-folder',
+    destination: '/tmp/renamed-folder',
+};
+return msg;
+```
 
-- `msg.file` _(object)_: Event details containing `filetype`, `action`, `source`, `destination`, `path` (resulting path), `dir`, `base`, and `name`.
+Dynamic delete example:
+
+```js
+msg.file = {
+    action: 'delete',
+    source: '/tmp/source-folder',
+};
+return msg;
+```
+
+Output metadata is written to `msg.file`:
+
+```js
+msg.file = {
+    filetype: 'directory',
+    action: 'copy',
+    source: '/tmp/source-folder',
+    destination: '/tmp/archive/source-folder',
+    path: '/tmp/archive/source-folder',
+    dir: '/tmp/archive',
+    base: 'source-folder',
+    name: 'source-folder',
+    ext: '',
+};
+```
+
+> `directory-transfer` delete removes empty directories only.
 
 ---
 
-## 3. directory-watch (`dir-watch`)
+### directory-watch
 
-A node that watches a directory to detect added, changed, and deleted files or directories using `chokidar`.
+Watches a directory and emits messages when files or directories are added, changed, or deleted.
 
-### Properties
+Supported event types:
 
-- **Folder**: Path of the directory to watch.
-- **Events**: Trigger events on Add, Change, or Delete.
-- **Types**: Filter events for Files, Directories, or both.
-- **Ignore pattern**: Regex matching file names to exclude.
-- **Depth**: Depth of subdirectories to watch (0 for root only).
-- **Await write finish**: Wait until file size stabilizes to prevent triggering on incomplete files.
-- **Threshold**: Time (ms) to wait for stability.
-- **On start ignore files in folder**: Ignore existing files upon node startup.
+- `add`
+- `change`
+- `delete`
 
-### Outputs
+Supported item filters:
 
-- `msg.file` _(object)_: Event details containing `action` (`add`, `change`, `delete`), `filetype`, `watchdir`, `path`, `dir`, `base`, `name`, `ext`, and `stats` (Node.js `fs.Stats` object).
+- files
+- directories
+
+The node has no input and one output.
+
+Example output:
+
+```js
+msg.file = {
+    action: 'add',
+    filetype: 'file',
+    watchdir: '/tmp/watch',
+    path: '/tmp/watch/example.txt',
+    dir: '/tmp/watch',
+    base: 'example.txt',
+    name: 'example',
+    ext: '.txt',
+    stats: {},
+};
+```
+
+## Watch Options
+
+### Folder
+
+Directory path to watch.
+
+### Events
+
+Select which events emit messages:
+
+- Add
+- Change
+- Delete
+
+### Types
+
+Select which filesystem item types emit messages:
+
+- Files
+- Directories
+
+### Ignore pattern
+
+Optional regular expression for file names to ignore.
+
+Only the base file name is checked, not the full path.
+
+### Depth
+
+Maximum subdirectory depth to watch.
+
+Use `0` to watch only the configured root directory.
+
+### Await write finish
+
+Waits until a file size stabilizes before emitting an event.
+
+This is useful when files are copied or written slowly.
+
+### Threshold
+
+Stability threshold in milliseconds for `awaitWriteFinish`.
+
+Default:
+
+```text
+2000
+```
+
+### On start ignore files in folder
+
+When enabled, existing files are ignored when the watcher starts.
+
+## Dynamic Mode
+
+`directory-action` and `directory-transfer` support **Load from `msg.file`** mode.
+
+When enabled, the node ignores the configured editor fields and reads operation details from `msg.file`.
+
+`directory-watch` does not use dynamic input because it is an event source node with no input.
+
+## Output Fields
+
+Directory nodes write normalized metadata to `msg.file`.
+
+Common fields:
+
+- `filetype`
+- `path`
+- `dir`
+- `base`
+- `name`
+- `ext`
+
+Additional fields depend on the node and action:
+
+- `directory-action`: `contents`
+- `directory-transfer`: `action`, `source`, `destination`
+- `directory-watch`: `action`, `watchdir`, `stats`
+
+## Status Indicators
+
+The nodes display runtime status in the Node-RED editor:
+
+- green dot — operation or event completed
+- grey ring — watcher is listening
+- red dot — error or invalid configuration
+
+## Notes
+
+- Paths are normalized using Node.js path handling.
+- Directory copy uses recursive copy.
+- Directory move falls back to copy-and-delete when moving across devices.
+- Directory watch uses `chokidar`.
+
+## License
+
+MIT
