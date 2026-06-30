@@ -176,65 +176,65 @@
 
     ### Properties
 
-    - **Folder** _string_\
+    - **Folder** _string_ \
       Path of the directory to watch.
 
-    - **Events** _checkboxes_\
+    - **Events** _checkboxes_ \
       Select which events will trigger a message: Add, Change, or Delete.
 
-    - **Types** _checkboxes_\
+    - **Types** _checkboxes_ \
       Filter events to only trigger for **Files**, **Directories**, or both.
 
         > **⚠️ Important:** Use `Add` for `Directories` with caution, as it will traverse the entire structure.
         >
         > Additionally, the event for adding directories is triggered _immediately_ when a folder is created, often before any files have actually been copied into it. The "Await write finish" feature only applies to individual files, not directories. If you are watching directories, you must handle the completion timing manually in your flow.
 
-    - **Ignore pattern** _regex_\
+    - **Ignore pattern** _regex_ \
       (Optional) Regex that matches file names to exclude (checks only the file name, not the full path).
 
-    - **Depth** _number_\
+    - **Depth** _number_ \
       Depth of subdirectories to watch (0 for root only).
 
-    - **Await write finish** _boolean_\
+    - **Await write finish** _boolean_ \
       Wait until the file size stabilizes before triggering an event (useful to prevent triggering on incomplete files).
 
-    - **Threshold** _number_\
+    - **Threshold** _number_ \
       Time in milliseconds to wait for file size stability.
 
-    - **On start ignore files in folder** _boolean_\
+    - **On start ignore files in folder** _boolean_ \
       If enabled, existing files in the directory will be ignored when the node starts.
 
     ---
 
     ### Outputs
 
-    - **msg.file** _object_\
+    - **msg.file** _object_ \
       The object containing the event details.
 
-    - **msg.file.action** _string_\
+    - **msg.file.action** _string_ \
       The event that triggered the node (`add`, `change`, or `delete`).
 
-    - **msg.file.filetype** _string_\
+    - **msg.file.filetype** _string_ \
       The type of item that triggered the event (`file` or `directory`).
 
-    - **msg.file.watchdir** _string_\
+    - **msg.file.watchdir** _string_ \
       The root directory configured for watching.
 
-    - **msg.file.path** _string_\
+    - **msg.file.path** _string_ \
       The complete, normalized "absolute" path to the item.
 
-    - **msg.file.dir** _string_\
+    - **msg.file.dir** _string_ \
       The "absolute" path to the parent directory containing the item.
 
-    - **msg.file.base** _string_\
+    - **msg.file.base** _string_ \
       The name of the file or directory _with_ the extension.
 
-    - **msg.file.name** _string_\
+    - **msg.file.name** _string_ \
       The name of the file or directory _without_ the extension.
 
-    - **msg.file.ext** _string_\
+    - **msg.file.ext** _string_ \
       The file extension, including the dot.
 
-    - **msg.file.stats** _object_\
+    - **msg.file.stats** _object_ \
       The Node.js `fs.Stats` object for the file (will be `null` if unavailable).
 </script>

@@ -167,60 +167,60 @@
 
     ### Properties
 
-    - **Load from msg.file** _boolean_\
+    - **Load from msg.file** _boolean_ \
       If enabled, the node will ignore the UI properties and expect `msg.file.action`, `msg.file.source`, and `msg.file.destination` to be provided dynamically.
 
-    - **Action** _dropdown_\
+    - **Action** _dropdown_ \
       The operation to perform: Move / Rename, Copy, or Delete. _(Note: Delete is strictly non-recursive and will fail if the directory is not empty)._
 
-    - **Source** _string | msg_\
+    - **Source** _string | msg_ \
       The absolute path to the directory you want to transfer or delete.
 
-    - **Destination** _string | msg_\
+    - **Destination** _string | msg_ \
       The absolute path for the new location. _(Hidden if action is set to Delete)._
 
     ---
 
     ### Inputs
 
-    - **msg.file** _object_\
+    - **msg.file** _object_ \
       The incoming message triggers the operation.
 
-    - **msg.file.action** _string_\
+    - **msg.file.action** _string_ \
       The action to execute if triggered dynamically (`move`, `copy`, or `delete`).
 
-    - **msg.file.source** _string_\
+    - **msg.file.source** _string_ \
       The original absolute path to the directory.
 
-    - **msg.file.destination** _string_\
+    - **msg.file.destination** _string_ \
       The destination absolute path for the directory (omitted for delete operations).
 
     ### Outputs
 
-    - **msg.file** _object_\
+    - **msg.file** _object_ \
       The object containing the event details.
 
-    - **msg.file.filetype** _string_\
+    - **msg.file.filetype** _string_ \
       The type of item that triggered the event (`directory`).
 
-    - **msg.file.action** _string_\
+    - **msg.file.action** _string_ \
       The action performed (`move`, `copy`, or `delete`).
 
-    - **msg.file.source** _string_\
+    - **msg.file.source** _string_ \
       The normalized absolute path of the original directory.
 
-    - **msg.file.destination** _string_\
+    - **msg.file.destination** _string_ \
       The normalized absolute path of the destination (omitted for delete operations).
 
-    - **msg.file.path** _string_\
+    - **msg.file.path** _string_ \
       The normalized absolute path to the resulting directory (destination if moved/copied, or source if deleted).
 
-    - **msg.file.dir** _string_\
+    - **msg.file.dir** _string_ \
       The "absolute" path to the parent directory of the resulting location.
 
-    - **msg.file.base** _string_\
+    - **msg.file.base** _string_ \
       The name of the resulting directory.
 
-    - **msg.file.name** _string_\
+    - **msg.file.name** _string_ \
       The name of the resulting directory.
 </script>

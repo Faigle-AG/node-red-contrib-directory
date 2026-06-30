@@ -115,52 +115,52 @@
 
     ### Properties
 
-    - **Load from msg.file** _boolean_\
+    - **Load from msg.file** _boolean_ \
       If enabled, the node will ignore the UI properties and expect `msg.file.action` and `msg.file.path` to be provided dynamically.
 
-    - **Action** _dropdown_\
+    - **Action** _dropdown_ \
       The operation to perform: Create, Delete, or List Contents.
 
-    - **Target** _string | msg_\
+    - **Target** _string | msg_ \
       The absolute path to the directory you want to operate on.
 
     ---
 
     ### Inputs
 
-    - **msg.file** _object_\
+    - **msg.file** _object_ \
       The incoming message triggers the operation.
 
-    - **msg.file.action** _string_\
+    - **msg.file.action** _string_ \
       The action to execute if triggered dynamically (`create`, `delete`, or `list`).
 
-    - **msg.file.path** _string_\
+    - **msg.file.path** _string_ \
       The destination path of the directory.
 
     ### Outputs
 
-    - **msg.payload** _array | boolean_\
+    - **msg.payload** _array | boolean_ \
         - **List**: Returns an array of strings representing the files and folders inside the target directory.
         - **Create / Delete**: Returns `true` on success.
 
-    - **msg.file** _object_\
+    - **msg.file** _object_ \
       The object containing the event details.
 
-    - **msg.file.filetype** _string_\
+    - **msg.file.filetype** _string_ \
       The type of item that triggered the event (`directory`).
 
-    - **msg.file.path** _string_\
+    - **msg.file.path** _string_ \
       The complete, normalized "absolute" path to the directory.
 
-    - **msg.file.dir** _string_\
+    - **msg.file.dir** _string_ \
       The "absolute" path to the parent directory.
 
-    - **msg.file.base** _string_\
+    - **msg.file.base** _string_ \
       The name of the directory.
 
-    - **msg.file.name** _string_\
+    - **msg.file.name** _string_ \
       The name of the directory.
 
-    - **msg.file.contents** _array_\
+    - **msg.file.contents** _array_ \
       An array containing the filenames inside the directory if the action was `List Contents`.
 </script>
