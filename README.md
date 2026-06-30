@@ -248,7 +248,3 @@ The nodes display runtime status in the Node-RED editor:
 - Directory copy uses recursive copy.
 - Directory move falls back to copy-and-delete when moving across devices.
 - Directory watch uses `chokidar`.
-
-## License
-
-MIT
