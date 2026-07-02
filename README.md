@@ -65,9 +65,8 @@ Moves, renames, copies, or deletes directories.
 
 Supported actions:
 
-- `move`
+- `move/rename`
 - `copy`
-- `delete`
 
 Dynamic copy example:
 
@@ -87,16 +86,6 @@ msg.file = {
     action: 'move',
     source: '/tmp/source-folder',
     destination: '/tmp/renamed-folder',
-};
-return msg;
-```
-
-Dynamic delete example:
-
-```js
-msg.file = {
-    action: 'delete',
-    source: '/tmp/source-folder',
 };
 return msg;
 ```
