@@ -11,6 +11,7 @@ module.exports = function (RED) {
         this.sourceType = config.sourceType || 'str';
         this.destination = config.destination;
         this.destinationType = config.destinationType || 'str';
+        this.createParent = config.createParent !== false;
 
         var node = this;
 
@@ -30,35 +31,30 @@ module.exports = function (RED) {
                       );
 
                 if (!currentAction) throw new Error('Action is missing');
-
                 if (!srcRaw) throw new Error('Source path is missing');
+                if (!destRaw) throw new Error('Destination path is missing');
 
                 const srcPath = path.normalize(srcRaw);
-                let dstPath = null;
-                let parsed = null;
+                const dstPath = path.normalize(destRaw);
 
-                if (currentAction !== 'delete') {
-                    if (!destRaw) throw new Error('Destination path is missing');
-
-                    dstPath = path.normalize(destRaw);
-
-                    if (srcPath === dstPath) {
-                        node.log('Source and Destination path are the same');
-                        finishAction('Ignored', srcPath, dstPath);
-                        return;
-                    }
-
-                    parsed = path.parse(dstPath);
-                } else {
-                    parsed = path.parse(srcPath);
+                if (srcPath === dstPath) {
+                    node.log('Source and Destination path are the same');
+                    finishAction('Ignored', srcPath, dstPath);
+                    return;
                 }
+
+                if (node.createParent) {
+                    fs.mkdirSync(path.dirname(dstPath), { recursive: true });
+                }
+
+                const parsed = path.parse(dstPath);
 
                 var file = {
                     filetype: 'directory',
                     action: currentAction,
                     source: srcPath,
                     destination: dstPath,
-                    path: dstPath || srcPath,
+                    path: dstPath,
                     dir: parsed.dir,
                     name: parsed.name,
                     base: parsed.base,
@@ -67,53 +63,22 @@ module.exports = function (RED) {
 
                 switch (currentAction) {
                     case 'copy':
-                        fs.cp(srcPath, dstPath, { recursive: true }, (err) => {
-                            if (err) return handleError(err);
-
-                            msg.file = { ...msg.file, ...file };
-                            finishAction(`Copied ${path.basename(srcPath)}`, srcPath, dstPath);
-                        });
+                        fs.cpSync(srcPath, dstPath, { recursive: true });
+                        msg.file = { ...msg.file, ...file };
+                        finishAction(`Copied ${path.basename(srcPath)}`, srcPath, dstPath);
                         break;
 
                     case 'move':
-                        fs.rename(srcPath, dstPath, (err) => {
-                            if (err && err.code === 'EXDEV') {
-                                fs.cp(srcPath, dstPath, { recursive: true }, (copyErr) => {
-                                    if (copyErr) return handleError(copyErr);
-                                    fs.rm(
-                                        srcPath,
-                                        { recursive: true, force: true },
-                                        (unlinkErr) => {
-                                            if (unlinkErr) return handleError(unlinkErr);
-
-                                            msg.file = { ...msg.file, ...file };
-                                            finishAction(
-                                                `Moved ${path.basename(srcPath)}`,
-                                                srcPath,
-                                                dstPath,
-                                            );
-                                        },
-                                    );
-                                });
-                            } else if (err) {
-                                return handleError(err);
-                            } else {
-                                msg.file = { ...msg.file, ...file };
-                                finishAction(`Moved ${path.basename(srcPath)}`, srcPath, dstPath);
-                            }
-                        });
-                        break;
-
-                    case 'delete':
-                        if (destRaw) node.log(`Destination Path ${dstPath} will be ignored`);
-
-                        fs.rmdir(srcPath, (err) => {
-                            if (err) return handleError(err);
-
-                            msg.file = { ...msg.file, ...file };
-                            msg.payload = true;
-                            finishAction(`Deleted ${file.base}`, srcPath, null);
-                        });
+                        try {
+                            fs.renameSync(srcPath, dstPath);
+                        } catch (err) {
+                            if (err.code === 'EXDEV') {
+                                fs.cpSync(srcPath, dstPath, { recursive: true });
+                                fs.rmSync(srcPath, { recursive: true, force: true });
+                            } else throw err;
+                        }
+                        msg.file = { ...msg.file, ...file };
+                        finishAction(`Moved ${path.basename(srcPath)}`, srcPath, dstPath);
                         break;
 
                     default:
@@ -126,14 +91,12 @@ module.exports = function (RED) {
                     if (done) done();
                     setTimeout(() => node.status({}), 5000);
                 }
-
-                function handleError(err) {
-                    node.status({ fill: 'red', shape: 'dot', text: err.code || 'Error' });
-                    if (done) done(err);
-                    else node.error(err, msg);
-                }
             } catch (err) {
-                node.status({ fill: 'red', shape: 'dot', text: 'Configuration error' });
+                node.status({
+                    fill: 'red',
+                    shape: 'dot',
+                    text: err.code || err.message || 'Configuration error',
+                });
                 if (done) done(err);
                 else node.error(err, msg);
             }
