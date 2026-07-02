@@ -17,7 +17,7 @@
                     return !!v && v.trim() !== '';
                 },
             },
-            target: {
+            source: {
                 value: '',
                 validate: function (v) {
                     if (
@@ -28,11 +28,14 @@
                         return true;
                     if (!v || v.trim() === '') return false;
 
-                    var builtInValidator = RED.validators.typedInput('targetType');
+                    var builtInValidator = RED.validators.typedInput('sourceType');
                     return builtInValidator.call(this, v);
                 },
             },
-            targetType: { value: 'str' },
+            sourceType: { value: 'str' },
+            property: { value: 'file.content' },
+            propertyType: { value: 'msg' },
+            createParent: { value: true },
         },
 
         inputs: 1,
@@ -41,25 +44,41 @@
         label: function () {
             return (
                 this.name ||
-                (!this.dynamic ? (this.action + ' ' + this.target).trim() : 'directory-action')
+                (!this.dynamic
+                    ? (this.action + ' ' + (this.source || '')).trim()
+                    : 'directory-action')
             );
         },
 
         oneditprepare: function () {
-            $('#node-input-target').typedInput({
+            $('#node-input-source').typedInput({
                 default: 'str',
                 types: ['msg', 'flow', 'global', 'str', 'jsonata', 'env'],
-                typeField: $('#node-input-targetType'),
+                typeField: $('#node-input-sourceType'),
+            });
+
+            $('#node-input-property').typedInput({
+                default: 'msg',
+                types: ['msg', 'flow', 'global'],
+                typeField: $('#node-input-propertyType'),
             });
 
             $('#node-input-dynamic').on('change', function () {
                 if ($(this).prop('checked')) $('#file-options-group').hide();
                 else $('#file-options-group').show();
 
-                $('#node-input-target').trigger('change');
+                $('#node-input-source').trigger('change');
+                $('#node-input-action').trigger('change');
+            });
+
+            $('#node-input-action').on('change', function () {
+                if ($(this).val() === 'create' || $('#node-input-dynamic').prop('checked'))
+                    $('#row-create-parent').show();
+                else $('#row-create-parent').hide();
             });
 
             $('#node-input-dynamic').trigger('change');
+            $('#node-input-action').trigger('change');
         },
     });
 </script>
@@ -111,6 +130,15 @@
         <input type="text" id="node-input-name" placeholder="Name" class="input-width-70" />
     </div>
 
+    <div class="form-row">
+        <label for="node-input-property">
+            <i class="fa fa-arrow-right"></i>
+            <span>Output to</span>
+        </label>
+        <input type="text" id="node-input-property" class="input-width-70" />
+        <input type="hidden" id="node-input-propertyType" />
+    </div>
+
     <div class="form-row flex-checkbox-row">
         <input type="checkbox" id="node-input-dynamic" class="input-width-70" />
         <label for="node-input-dynamic">
@@ -134,15 +162,20 @@
             </select>
         </div>
 
-        <div class="form-row" id="row-target">
-            <label for="node-input-target">
+        <div class="form-row" id="row-source">
+            <label for="node-input-source">
                 <i class="fa fa-folder"></i>
-                Target
+                Source Path
             </label>
-            <input type="text" id="node-input-target" placeholder="Path to directory" />
-            <input type="hidden" id="node-input-targetType" />
+            <input type="text" id="node-input-source" placeholder="Path to directory" />
+            <input type="hidden" id="node-input-sourceType" />
         </div>
     </fieldset>
+
+    <div class="form-row flex-checkbox-row" id="row-create-parent">
+        <input type="checkbox" id="node-input-createParent" />
+        <label for="node-input-createParent">Create parent folder</label>
+    </div>
 </script>
 
 <!-- prettier-ignore -->
@@ -151,14 +184,20 @@ A node to create, delete, or list the contents of directories on the file system
 
 ### Properties
 
+- **Output to** _msg | flow | global_ \
+  The property where the result data (the directory contents or success boolean) will be put.
+
 - **Load from msg.file** _boolean_ \
   If enabled, the node will ignore the UI properties and expect `msg.file.action` and `msg.file.path` to be provided dynamically.
 
 - **Action** _dropdown_ \
   The operation to perform: Create, Delete, or List Contents.
 
-- **Target** _string | msg_ \
+- **Source Path** _string | msg_ \
   The absolute path to the directory you want to operate on.
+
+- **Create parent folder** _boolean_ \
+  If enabled during a `Create` action, missing parent directories in the path will be created automatically.
 
 ---
 
@@ -175,7 +214,7 @@ A node to create, delete, or list the contents of directories on the file system
 
 ### Outputs
 
-- **msg.payload** _array | boolean_ \
+- **output property** _array | boolean_ \
     - **List**: Returns an array of strings representing the files and folders inside the target directory.
     - **Create / Delete**: Returns `true` on success.
 

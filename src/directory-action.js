@@ -7,23 +7,25 @@ module.exports = function (RED) {
 
         this.dynamic = config.dynamic;
         this.action = config.action;
-        this.target = config.target;
-        this.targetType = config.targetType || 'str';
+        this.source = config.source;
+        this.sourceType = config.sourceType || 'str';
+        this.property = config.property || 'payload';
+        this.propertyType = config.propertyType || 'msg';
+        this.createParent = config.createParent !== false;
 
         var node = this;
 
         node.on('input', function (msg, send, done) {
             try {
                 const currentAction = node.dynamic ? msg.file && msg.file.action : node.action;
-                const targetRaw = node.dynamic
+                const sourceRaw = node.dynamic
                     ? msg.file && msg.file.path
-                    : RED.util.evaluateNodeProperty(node.target, node.targetType, node, msg);
+                    : RED.util.evaluateNodeProperty(node.source, node.sourceType, node, msg);
 
-                if (!targetRaw) throw new Error('Target directory path is missing');
-
+                if (!sourceRaw) throw new Error('Source directory path is missing');
                 if (!currentAction) throw new Error('Action is missing');
 
-                const targetPath = path.normalize(targetRaw);
+                const targetPath = path.normalize(sourceRaw);
                 const parsed = path.parse(targetPath);
 
                 var file = {
@@ -35,37 +37,38 @@ module.exports = function (RED) {
                     ext: parsed.ext,
                 };
 
+                const setOutputData = (data) => {
+                    if (node.propertyType === 'msg')
+                        RED.util.setMessageProperty(msg, node.property, data, true);
+                    else if (node.propertyType === 'flow')
+                        node.context().flow.set(node.property, data);
+                    else if (node.propertyType === 'global')
+                        node.context().global.set(node.property, data);
+                };
+
                 switch (currentAction) {
                     case 'create':
-                        fs.mkdir(targetPath, { recursive: true }, (err) => {
-                            if (err) return handleError(err);
-
-                            msg.file = { ...msg.file, ...file };
-                            msg.payload = true;
-                            finishAction(`Created ${file.base}`);
-                        });
+                        fs.mkdirSync(targetPath, { recursive: node.createParent });
+                        msg.file = { ...msg.file, ...file };
+                        setOutputData(true);
+                        finishAction(`Created ${file.base}`);
                         break;
 
                     case 'delete':
-                        fs.rm(targetPath, { recursive: true, force: true }, (err) => {
-                            if (err) return handleError(err);
-
-                            msg.file = { ...msg.file, ...file };
-                            msg.payload = true;
-                            finishAction(`Deleted ${file.base}`);
-                        });
+                        fs.rmSync(targetPath, { recursive: true, force: true });
+                        msg.file = { ...msg.file, ...file };
+                        setOutputData(true);
+                        finishAction(`Deleted ${file.base}`);
                         break;
 
-                    case 'list':
-                        fs.readdir(targetPath, (err, files) => {
-                            if (err) return handleError(err);
-
-                            file.contents = files;
-                            msg.file = { ...msg.file, ...file };
-                            msg.payload = files;
-                            finishAction(`Listed ${files.length} items`);
-                        });
+                    case 'list': {
+                        const files = fs.readdirSync(targetPath);
+                        file.contents = files;
+                        msg.file = { ...msg.file, ...file };
+                        setOutputData(files);
+                        finishAction(`Listed ${files.length} items`);
                         break;
+                    }
 
                     default:
                         throw new Error(`Unknown action: ${currentAction}`);
@@ -77,14 +80,12 @@ module.exports = function (RED) {
                     if (done) done();
                     setTimeout(() => node.status({}), 5000);
                 }
-
-                function handleError(err) {
-                    node.status({ fill: 'red', shape: 'dot', text: err.code || 'Error' });
-                    if (done) done(err);
-                    else node.error(err, msg);
-                }
             } catch (err) {
-                node.status({ fill: 'red', shape: 'dot', text: 'Configuration error' });
+                node.status({
+                    fill: 'red',
+                    shape: 'dot',
+                    text: err.code || err.message || 'Configuration error',
+                });
                 if (done) done(err);
                 else node.error(err, msg);
             }
