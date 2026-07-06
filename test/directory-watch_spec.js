@@ -23,10 +23,6 @@ function cleanup() {
     }
 }
 
-function delay(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 describe('directory-watch node', function () {
     this.timeout(10000);
 
@@ -44,14 +40,14 @@ describe('directory-watch node', function () {
     });
 
     it('loads with configured properties', function (done) {
-        const folder = resetWatchDir('load');
+        const source = resetWatchDir('load');
         const flow = [
             {
                 id: 'n1',
                 type: 'directory-watch',
                 name: 'watch test directory',
-                folder,
-                folderType: 'str',
+                source,
+                sourceType: 'str',
                 depth: 0,
                 watchAdd: true,
                 watchChange: false,
@@ -69,7 +65,7 @@ describe('directory-watch node', function () {
         helper.load(directoryWatchNode, flow, function () {
             const n1 = helper.getNode('n1');
             assert.equal(n1.name, 'watch test directory');
-            assert.equal(n1.folder, path.normalize(folder));
+            assert.equal(n1.source, path.normalize(source));
             assert.equal(n1.depth, 0);
             assert.equal(n1.watchAdd, true);
             assert.equal(n1.filterFiles, true);
@@ -78,14 +74,14 @@ describe('directory-watch node', function () {
     });
 
     it('emits an add event for a new file', function (done) {
-        const folder = resetWatchDir('add-file');
-        const target = path.join(folder, 'added.txt');
+        const source = resetWatchDir('add-file');
+        const target = path.join(source, 'added.txt');
         const flow = [
             {
                 id: 'n1',
                 type: 'directory-watch',
-                folder,
-                folderType: 'str',
+                source,
+                sourceType: 'str',
                 depth: 0,
                 watchAdd: true,
                 watchChange: false,
@@ -102,13 +98,13 @@ describe('directory-watch node', function () {
             { id: 'h1', type: 'helper' },
         ];
 
-        helper.load(directoryWatchNode, flow, async function () {
+        helper.load(directoryWatchNode, flow, function () {
             const h1 = helper.getNode('h1');
 
             h1.on('input', function (msg) {
                 assert.equal(msg.file.action, 'add');
                 assert.equal(msg.file.filetype, 'file');
-                assert.equal(msg.file.watchdir, path.normalize(folder));
+                assert.equal(msg.file.source, path.normalize(source));
                 assert.equal(msg.file.path, path.normalize(target));
                 assert.equal(msg.file.base, 'added.txt');
                 assert.equal(msg.file.name, 'added');
@@ -117,22 +113,21 @@ describe('directory-watch node', function () {
                 done();
             });
 
-            await delay(500);
-            fs.writeFileSync(target, 'added\n');
+            setTimeout(() => fs.writeFileSync(target, 'added\n'), 500);
         });
     });
 
     it('emits a delete event for a removed file', function (done) {
-        const folder = resetWatchDir('delete-file');
-        const target = path.join(folder, 'deleted.txt');
+        const source = resetWatchDir('delete-file');
+        const target = path.join(source, 'deleted.txt');
         fs.writeFileSync(target, 'delete me\n');
 
         const flow = [
             {
                 id: 'n1',
                 type: 'directory-watch',
-                folder,
-                folderType: 'str',
+                source,
+                sourceType: 'str',
                 depth: 0,
                 watchAdd: false,
                 watchChange: false,
@@ -149,7 +144,7 @@ describe('directory-watch node', function () {
             { id: 'h1', type: 'helper' },
         ];
 
-        helper.load(directoryWatchNode, flow, async function () {
+        helper.load(directoryWatchNode, flow, function () {
             const h1 = helper.getNode('h1');
 
             h1.on('input', function (msg) {
@@ -160,20 +155,19 @@ describe('directory-watch node', function () {
                 done();
             });
 
-            await delay(500);
-            fs.unlinkSync(target);
+            setTimeout(() => fs.unlinkSync(target), 500);
         });
     });
 
     it('emits an add event for a new directory when directory filtering is enabled', function (done) {
-        const folder = resetWatchDir('add-directory');
-        const target = path.join(folder, 'child-dir');
+        const source = resetWatchDir('add-directory');
+        const target = path.join(source, 'child-dir');
         const flow = [
             {
                 id: 'n1',
                 type: 'directory-watch',
-                folder,
-                folderType: 'str',
+                source,
+                sourceType: 'str',
                 depth: 1,
                 watchAdd: true,
                 watchChange: false,
@@ -190,7 +184,7 @@ describe('directory-watch node', function () {
             { id: 'h1', type: 'helper' },
         ];
 
-        helper.load(directoryWatchNode, flow, async function () {
+        helper.load(directoryWatchNode, flow, function () {
             const h1 = helper.getNode('h1');
 
             h1.on('input', function (msg) {
@@ -201,21 +195,20 @@ describe('directory-watch node', function () {
                 done();
             });
 
-            await delay(500);
-            fs.mkdirSync(target);
+            setTimeout(() => fs.mkdirSync(target), 500);
         });
     });
 
     it('ignores files matching the ignoredFiles regex', function (done) {
-        const folder = resetWatchDir('ignored-file');
-        const ignored = path.join(folder, 'ignored.tmp');
-        const accepted = path.join(folder, 'accepted.txt');
+        const source = resetWatchDir('ignored-file');
+        const ignored = path.join(source, 'ignored.tmp');
+        const accepted = path.join(source, 'accepted.txt');
         const flow = [
             {
                 id: 'n1',
                 type: 'directory-watch',
-                folder,
-                folderType: 'str',
+                source,
+                sourceType: 'str',
                 depth: 0,
                 watchAdd: true,
                 watchChange: false,
@@ -232,7 +225,7 @@ describe('directory-watch node', function () {
             { id: 'h1', type: 'helper' },
         ];
 
-        helper.load(directoryWatchNode, flow, async function () {
+        helper.load(directoryWatchNode, flow, function () {
             const h1 = helper.getNode('h1');
             const seen = [];
 
@@ -243,10 +236,10 @@ describe('directory-watch node', function () {
                 done();
             });
 
-            await delay(500);
-            fs.writeFileSync(ignored, 'ignored\n');
-            await delay(300);
-            fs.writeFileSync(accepted, 'accepted\n');
+            setTimeout(() => {
+                fs.writeFileSync(ignored, 'ignored\n');
+                setTimeout(() => fs.writeFileSync(accepted, 'accepted\n'), 300);
+            }, 500);
         });
     });
 });

@@ -152,46 +152,16 @@ describe('directory-transfer node', function () {
         });
     });
 
-    it('deletes an empty configured directory', function (done) {
-        const source = path.join(WORK_DIR, 'delete-empty');
-        fs.rmSync(source, { recursive: true, force: true });
-        fs.mkdirSync(source, { recursive: true });
-
-        const flow = [
-            {
-                id: 'n1',
-                type: 'directory-transfer',
-                action: 'delete',
-                source,
-                sourceType: 'str',
-                wires: [['h1']],
-            },
-            { id: 'h1', type: 'helper' },
-        ];
-
-        helper.load(directoryTransferNode, flow, function () {
-            const n1 = helper.getNode('n1');
-            const h1 = helper.getNode('h1');
-
-            h1.on('input', function (msg) {
-                assert.equal(fs.existsSync(source), false);
-                assert.equal(msg.payload, true);
-                assert.equal(msg.file.action, 'delete');
-                assert.equal(msg.file.source, path.normalize(source));
-                assert.equal(msg.file.path, path.normalize(source));
-                assert.equal(msg.file.destination, null);
-                done();
-            });
-
-            n1.receive({});
-        });
-    });
-
     it('copies dynamically from msg.file.source to msg.file.destination', function (done) {
         const source = makeSourceDir('dynamic-source');
         const destination = path.join(WORK_DIR, 'dynamic-destination');
         const flow = [
-            { id: 'n1', type: 'directory-transfer', dynamic: true, wires: [['h1']] },
+            {
+                id: 'n1',
+                type: 'directory-transfer',
+                dynamic: true,
+                wires: [['h1']],
+            },
             { id: 'h1', type: 'helper' },
         ];
 

@@ -5,9 +5,9 @@ module.exports = function (RED) {
     function DirectoryWatchNode(config) {
         RED.nodes.createNode(this, config);
 
-        this.folderType = config.folderType || 'str';
-        this.folder = path.normalize(
-            RED.util.evaluateNodeProperty(config.folder, this.folderType, this),
+        this.sourceType = config.sourceType || 'str';
+        this.source = path.normalize(
+            RED.util.evaluateNodeProperty(config.source, this.sourceType, this),
         );
         this.depth = parseInt(config.depth) || 0;
         this.awaitWriteFinish = config.awaitWriteFinish;
@@ -32,9 +32,9 @@ module.exports = function (RED) {
             }
 
             const ignoreRegex = node.ignoredFiles ? new RegExp(node.ignoredFiles) : null;
-            const normalizedTarget = node.folder;
+            const normalizedTarget = node.source;
 
-            const watcher = chokidar.watch(node.folder, {
+            const watcher = chokidar.watch(node.source, {
                 ignored: (filename) => ignoreRegex?.test(path.basename(filename)),
                 persistent: true,
                 depth: node.depth,
@@ -62,7 +62,7 @@ module.exports = function (RED) {
                     file: {
                         action: eventType,
                         filetype: fileType,
-                        watchdir: node.folder,
+                        source: node.source,
                         path: path.normalize(filename),
                         dir: parsed.dir,
                         name: parsed.name,

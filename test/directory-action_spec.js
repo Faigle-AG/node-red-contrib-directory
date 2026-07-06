@@ -50,8 +50,10 @@ describe('directory-action node', function () {
                 name: 'list test directory',
                 dynamic: false,
                 action: 'list',
-                target,
-                targetType: 'str',
+                source: target,
+                sourceType: 'str',
+                property: 'payload',
+                propertyType: 'msg',
             },
         ];
 
@@ -59,8 +61,8 @@ describe('directory-action node', function () {
             const n1 = helper.getNode('n1');
             assert.equal(n1.name, 'list test directory');
             assert.equal(n1.action, 'list');
-            assert.equal(n1.target, target);
-            assert.equal(n1.targetType, 'str');
+            assert.equal(n1.source, target);
+            assert.equal(n1.sourceType, 'str');
             done();
         });
     });
@@ -72,8 +74,10 @@ describe('directory-action node', function () {
                 id: 'n1',
                 type: 'directory-action',
                 action: 'create',
-                target,
-                targetType: 'str',
+                source: target,
+                sourceType: 'str',
+                property: 'payload',
+                propertyType: 'msg',
                 wires: [['h1']],
             },
             { id: 'h1', type: 'helper' },
@@ -110,8 +114,10 @@ describe('directory-action node', function () {
                 id: 'n1',
                 type: 'directory-action',
                 action: 'list',
-                target,
-                targetType: 'str',
+                source: target,
+                sourceType: 'str',
+                property: 'payload',
+                propertyType: 'msg',
                 wires: [['h1']],
             },
             { id: 'h1', type: 'helper' },
@@ -144,8 +150,10 @@ describe('directory-action node', function () {
                 id: 'n1',
                 type: 'directory-action',
                 action: 'delete',
-                target,
-                targetType: 'str',
+                source: target,
+                sourceType: 'str',
+                property: 'payload',
+                propertyType: 'msg',
                 wires: [['h1']],
             },
             { id: 'h1', type: 'helper' },
@@ -170,7 +178,14 @@ describe('directory-action node', function () {
     it('runs dynamically from msg.file.action and msg.file.path', function (done) {
         const target = path.join(WORK_DIR, 'dynamic', 'created');
         const flow = [
-            { id: 'n1', type: 'directory-action', dynamic: true, wires: [['h1']] },
+            {
+                id: 'n1',
+                type: 'directory-action',
+                dynamic: true,
+                property: 'payload',
+                propertyType: 'msg',
+                wires: [['h1']],
+            },
             { id: 'h1', type: 'helper' },
         ];
 
@@ -194,6 +209,132 @@ describe('directory-action node', function () {
                     extra: 'preserved',
                 },
             });
+        });
+    });
+
+    it('emits error if source path is missing', function (done) {
+        const flow = [
+            {
+                id: 'n1',
+                type: 'directory-action',
+                action: 'list',
+                source: '',
+                sourceType: 'str',
+            },
+        ];
+
+        helper.load(directoryActionNode, flow, function () {
+            const n1 = helper.getNode('n1');
+            n1.on('call:error', function (call) {
+                assert.equal(call.args[0].message, 'Source directory path is missing');
+                done();
+            });
+            n1.receive({});
+        });
+    });
+
+    it('emits error if unknown action is provided', function (done) {
+        const target = resetTestDir('unknown-action');
+        const flow = [
+            {
+                id: 'n1',
+                type: 'directory-action',
+                action: 'invalid_action',
+                source: target,
+                sourceType: 'str',
+            },
+        ];
+
+        helper.load(directoryActionNode, flow, function () {
+            const n1 = helper.getNode('n1');
+            n1.on('call:error', function (call) {
+                assert.equal(call.args[0].message, 'Unknown action: invalid_action');
+                done();
+            });
+            n1.receive({});
+        });
+    });
+
+    it('fails to create nested directories if createParent is false', function (done) {
+        const target = path.join(WORK_DIR, 'no-parent', 'nested');
+        const flow = [
+            {
+                id: 'n1',
+                type: 'directory-action',
+                action: 'create',
+                source: target,
+                sourceType: 'str',
+                createParent: false,
+            },
+        ];
+
+        helper.load(directoryActionNode, flow, function () {
+            const n1 = helper.getNode('n1');
+            n1.on('call:error', function (call) {
+                assert.equal(fs.existsSync(target), false);
+                assert.equal(call.args[0].code, 'ENOENT');
+                done();
+            });
+            n1.receive({});
+        });
+    });
+
+    it('saves output to flow context', function (done) {
+        const target = resetTestDir('flow-output');
+        const flow = [
+            {
+                id: 'n1',
+                z: 'flow1',
+                type: 'directory-action',
+                action: 'list',
+                source: target,
+                sourceType: 'str',
+                property: 'testOutput',
+                propertyType: 'flow',
+                wires: [['h1']],
+            },
+            { id: 'h1', z: 'flow1', type: 'helper' },
+        ];
+
+        helper.load(directoryActionNode, flow, function () {
+            const n1 = helper.getNode('n1');
+            const h1 = helper.getNode('h1');
+
+            h1.on('input', function () {
+                assert.deepEqual(n1.context().flow.get('testOutput'), []);
+                done();
+            });
+
+            n1.receive({});
+        });
+    });
+
+    it('saves output to global context', function (done) {
+        const target = resetTestDir('global-output');
+        const flow = [
+            {
+                id: 'n1',
+                type: 'directory-action',
+                action: 'list',
+                source: target,
+                sourceType: 'str',
+                property: 'testOutput',
+                propertyType: 'global',
+                wires: [['h1']],
+            },
+            { id: 'h1', type: 'helper' },
+        ];
+
+        helper.load(directoryActionNode, flow, function () {
+            const n1 = helper.getNode('n1');
+            const h1 = helper.getNode('h1');
+
+            h1.on('input', function () {
+                assert.deepEqual(n1.context().global.get('testOutput'), []);
+                done();
+            });
+
+            n1.receive({});
         });
     });
 });
