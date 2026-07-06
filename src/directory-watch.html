@@ -224,6 +224,7 @@
     </fieldset>
 </script>
 
+<!-- @formatter:off -->
 <!-- prettier-ignore -->
 <script type="text/markdown" data-help-name="directory-watch">
 A node that watches a directory to detect added, changed, and deleted files or directories.
@@ -265,30 +266,31 @@ A node that watches a directory to detect added, changed, and deleted files or d
 - **msg.file** _object_ \
   The object containing the event details.
 
-- **msg.file.action** _string_ \
-  The event that triggered the node (`add`, `change`, or `delete`).
+  - **msg.file.action** _string_ \
+    The event that triggered the node (`add`, `change`, or `delete`).
 
-- **msg.file.filetype** _string_ \
-  The type of item that triggered the event (`file` or `directory`).
+  - **msg.file.filetype** _string_ \
+    The type of item that triggered the event (`file` or `directory`).
 
-- **msg.file.source** _string_ \
-  The root directory configured for watching.
+  - **msg.file.source** _string_ \
+    The root directory configured for watching.
 
-- **msg.file.path** _string_ \
-  The complete, normalized "absolute" path to the item.
+  - **msg.file.path** _string_ \
+    The complete, normalized "absolute" path to the item.
 
-- **msg.file.dir** _string_ \
-  The "absolute" path to the parent directory containing the item.
+  - **msg.file.dir** _string_ \
+    The "absolute" path to the parent directory containing the item.
 
-- **msg.file.base** _string_ \
-  The name of the file or directory _with_ the extension.
+  - **msg.file.base** _string_ \
+    The name of the file or directory _with_ the extension.
 
-- **msg.file.name** _string_ \
-  The name of the file or directory _without_ the extension.
+  - **msg.file.name** _string_ \
+    The name of the file or directory _without_ the extension.
 
-- **msg.file.ext** _string_ \
-  The file extension, including the dot.
+  - **msg.file.ext** _string_ \
+    The file extension, including the dot.
 
-- **msg.file.stats** _object_ \
-  The Node.js `fs.Stats` object for the file (will be `null` if unavailable).
+  - **msg.file.stats** _object_ \
+    The Node.js `fs.Stats` object for the file (will be `null` if unavailable).
 </script>
+<!-- @formatter:on -->

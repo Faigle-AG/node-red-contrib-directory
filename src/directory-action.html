@@ -178,6 +178,7 @@
     </div>
 </script>
 
+<!-- @formatter:off -->
 <!-- prettier-ignore -->
 <script type="text/markdown" data-help-name="directory-action">
 A node to create, delete, or list the contents of directories on the file system.
@@ -206,11 +207,11 @@ A node to create, delete, or list the contents of directories on the file system
 - **msg.file** _object_ \
   The incoming message triggers the operation.
 
-- **msg.file.action** _string_ \
-  The action to execute if triggered dynamically (`create`, `delete`, or `list`).
+  - **msg.file.action** _string_ \
+    The action to execute if triggered dynamically (`create`, `delete`, or `list`).
 
-- **msg.file.path** _string_ \
-  The destination path of the directory.
+  - **msg.file.path** _string_ \
+    The destination path of the directory.
 
 ### Outputs
 
@@ -221,21 +222,22 @@ A node to create, delete, or list the contents of directories on the file system
 - **msg.file** _object_ \
   The object containing the event details.
 
-- **msg.file.filetype** _string_ \
-  The type of item that triggered the event (`directory`).
+  - **msg.file.filetype** _string_ \
+    The type of item that triggered the event (`directory`).
 
-- **msg.file.path** _string_ \
-  The complete, normalized "absolute" path to the directory.
+  - **msg.file.path** _string_ \
+    The complete, normalized "absolute" path to the directory.
 
-- **msg.file.dir** _string_ \
-  The "absolute" path to the parent directory.
+  - **msg.file.dir** _string_ \
+    The "absolute" path to the parent directory.
 
-- **msg.file.base** _string_ \
-  The name of the directory.
+  - **msg.file.base** _string_ \
+    The name of the directory.
 
-- **msg.file.name** _string_ \
-  The name of the directory.
+  - **msg.file.name** _string_ \
+    The name of the directory.
 
-- **msg.file.contents** _array_ \
-  An array containing the filenames inside the directory if the action was `List Contents`.
+  - **msg.file.contents** _array_ \
+    An array containing the filenames inside the directory if the action was `List Contents`.
 </script>
+<!-- @formatter:on -->
