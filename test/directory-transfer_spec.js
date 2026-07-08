@@ -26,7 +26,10 @@ function makeSourceDir(name) {
 
 function cleanup() {
     if (!process.env.KEEP_TEST_FILES) {
-        fs.rmSync(path.join(DATA_DIR, 'directory-transfer'), { recursive: true, force: true });
+        fs.rmSync(path.join(DATA_DIR, 'directory-transfer'), {
+            recursive: true,
+            force: true,
+        });
     }
 }
 

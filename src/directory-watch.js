@@ -1,6 +1,7 @@
 module.exports = function (RED) {
     const chokidar = require('chokidar');
     const path = require('path');
+    const { extendNode } = require('@faigle/node-red-runtime-utils')(RED);
 
     function DirectoryWatchNode(config) {
         RED.nodes.createNode(this, config);
@@ -22,6 +23,7 @@ module.exports = function (RED) {
 
         this.startListening = () => {
             var node = this;
+            extendNode(node);
 
             var awaitWriteConfig = false;
             if (node.awaitWriteFinish) {
@@ -48,13 +50,8 @@ module.exports = function (RED) {
             });
 
             function createMsg(filename, stats, eventType, fileType) {
-                setTimeout(() => {
-                    node.status({ fill: 'grey', shape: 'ring', text: 'Listening...' });
-                }, 5000);
-                node.status({
-                    fill: 'green',
-                    shape: 'dot',
-                    text: `${eventType} ${fileType} ${path.basename(filename)}`,
+                node.status.succeeded(`${eventType} ${fileType} ${path.basename(filename)}`, {
+                    next: () => node.status.waiting('Listening...'),
                 });
 
                 const parsed = path.parse(filename);
@@ -95,12 +92,10 @@ module.exports = function (RED) {
                     });
             }
 
-            watcher.on('ready', () =>
-                node.status({ fill: 'grey', shape: 'ring', text: 'Listening...' }),
-            );
+            watcher.on('ready', () => node.status.waiting('Listening...'));
 
             watcher.on('error', (err) => {
-                node.status({ fill: 'red', shape: 'dot', text: 'Error : ' + err.message });
+                node.status.failed('Error : ' + err.message);
                 node.error(err);
             });
 

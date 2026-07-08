@@ -22,7 +22,10 @@
             awaitWriteFinish: { value: true },
             stabilityThreshold: { value: 2000 },
             ignoreInitial: { value: false },
-            ignoredFiles: { value: '', validate: RED.validators.typedInput('ignoredFilesType') },
+            ignoredFiles: {
+                value: '',
+                validate: RED.validators.typedInput('ignoredFilesType'),
+            },
             ignoredFilesType: { value: 're' },
         },
 

@@ -1,6 +1,7 @@
 module.exports = function (RED) {
     const fs = require('fs');
     const path = require('path');
+    const { extendNode } = require('@faigle/node-red-runtime-utils')(RED);
 
     function DirectoryTransferNode(config) {
         RED.nodes.createNode(this, config);
@@ -14,21 +15,17 @@ module.exports = function (RED) {
         this.createParent = config.createParent !== false;
 
         var node = this;
+        extendNode(node);
 
-        node.on('input', function (msg, send, done) {
+        node.on('input', async function (msg, send, done) {
             try {
                 const currentAction = node.dynamic ? msg.file && msg.file.action : node.action;
                 const srcRaw = node.dynamic
                     ? msg.file && msg.file.source
-                    : RED.util.evaluateNodeProperty(node.source, node.sourceType, node, msg);
+                    : await node.getTypedProperty(node.source, node.sourceType, msg);
                 const destRaw = node.dynamic
                     ? msg.file && msg.file.destination
-                    : RED.util.evaluateNodeProperty(
-                          node.destination,
-                          node.destinationType,
-                          node,
-                          msg,
-                      );
+                    : await node.getTypedProperty(node.destination, node.destinationType, msg);
 
                 if (!currentAction) throw new Error('Action is missing');
                 if (!srcRaw) throw new Error('Source path is missing');
@@ -43,9 +40,7 @@ module.exports = function (RED) {
                     return;
                 }
 
-                if (node.createParent) {
-                    fs.mkdirSync(path.dirname(dstPath), { recursive: true });
-                }
+                if (node.createParent) fs.mkdirSync(path.dirname(dstPath), { recursive: true });
 
                 const parsed = path.parse(dstPath);
 
@@ -73,8 +68,13 @@ module.exports = function (RED) {
                             fs.renameSync(srcPath, dstPath);
                         } catch (err) {
                             if (err.code === 'EXDEV') {
-                                fs.cpSync(srcPath, dstPath, { recursive: true });
-                                fs.rmSync(srcPath, { recursive: true, force: true });
+                                fs.cpSync(srcPath, dstPath, {
+                                    recursive: true,
+                                });
+                                fs.rmSync(srcPath, {
+                                    recursive: true,
+                                    force: true,
+                                });
                             } else throw err;
                         }
                         msg.file = { ...msg.file, ...file };
@@ -85,18 +85,13 @@ module.exports = function (RED) {
                         throw new Error(`Unknown action type: ${currentAction}`);
                 }
 
-                function finishAction(statusText /*, sPath, dPath*/) {
-                    node.status({ fill: 'green', shape: 'dot', text: statusText });
+                function finishAction(statusText) {
+                    node.status.succeeded(statusText);
                     send(msg);
                     if (done) done();
-                    setTimeout(() => node.status({}), 5000);
                 }
             } catch (err) {
-                node.status({
-                    fill: 'red',
-                    shape: 'dot',
-                    text: err.code || err.message || 'Configuration error',
-                });
+                node.status.failed(err.code || err.message || 'Configuration error');
                 if (done) done(err);
                 else node.error(err, msg);
             }

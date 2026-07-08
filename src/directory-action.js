@@ -1,6 +1,7 @@
 module.exports = function (RED) {
     const fs = require('fs');
     const path = require('path');
+    const { extendNode } = require('@faigle/node-red-runtime-utils')(RED);
 
     function DirectoryActionNode(config) {
         RED.nodes.createNode(this, config);
@@ -14,13 +15,14 @@ module.exports = function (RED) {
         this.createParent = config.createParent !== false;
 
         var node = this;
+        extendNode(node);
 
-        node.on('input', function (msg, send, done) {
+        node.on('input', async function (msg, send, done) {
             try {
                 const currentAction = node.dynamic ? msg.file && msg.file.action : node.action;
                 const sourceRaw = node.dynamic
                     ? msg.file && msg.file.path
-                    : RED.util.evaluateNodeProperty(node.source, node.sourceType, node, msg);
+                    : await node.getTypedProperty(node.source, node.sourceType, msg);
 
                 if (!sourceRaw) throw new Error('Source directory path is missing');
                 if (!currentAction) throw new Error('Action is missing');
@@ -37,25 +39,33 @@ module.exports = function (RED) {
                     ext: parsed.ext,
                 };
 
-                const setOutputData = (data) => {
-                    if (node.propertyType === 'msg')
-                        RED.util.setMessageProperty(msg, node.property, data, true);
-                    else if (node.propertyType === 'flow')
-                        node.context().flow.set(node.property, data);
-                    else if (node.propertyType === 'global')
-                        node.context().global.set(node.property, data);
+                const setOutputData = async (data) => {
+                    await node.setTypedProperty(node.property, node.propertyType, msg, data);
                 };
+                //                const setOutputData = (data) => {
+                //                    if (node.propertyType === 'msg')
+                //                        RED.util.setMessageProperty(msg, node.property, data, true);
+                //                    else if (node.propertyType === 'flow')
+                //                        node.context().flow.set(node.property, data);
+                //                    else if (node.propertyType === 'global')
+                //                        node.context().global.set(node.property, data);
+                //                };
 
                 switch (currentAction) {
                     case 'create':
-                        fs.mkdirSync(targetPath, { recursive: node.createParent });
+                        fs.mkdirSync(targetPath, {
+                            recursive: node.createParent,
+                        });
                         msg.file = { ...msg.file, ...file };
                         setOutputData(true);
                         finishAction(`Created ${file.base}`);
                         break;
 
                     case 'delete':
-                        fs.rmSync(targetPath, { recursive: true, force: true });
+                        fs.rmSync(targetPath, {
+                            recursive: true,
+                            force: true,
+                        });
                         msg.file = { ...msg.file, ...file };
                         setOutputData(true);
                         finishAction(`Deleted ${file.base}`);
@@ -75,17 +85,12 @@ module.exports = function (RED) {
                 }
 
                 function finishAction(statusText) {
-                    node.status({ fill: 'green', shape: 'dot', text: statusText });
+                    node.status.succeeded(statusText);
                     send(msg);
                     if (done) done();
-                    setTimeout(() => node.status({}), 5000);
                 }
             } catch (err) {
-                node.status({
-                    fill: 'red',
-                    shape: 'dot',
-                    text: err.code || err.message || 'Configuration error',
-                });
+                node.status.failed(err.code || err.message || 'Configuration error');
                 if (done) done(err);
                 else node.error(err, msg);
             }
