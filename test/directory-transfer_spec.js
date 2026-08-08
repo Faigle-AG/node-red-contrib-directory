@@ -187,6 +187,7 @@ describe('directory-transfer node', function () {
                     action: 'copy',
                     source,
                     destination,
+                    recursive: true,
                     extra: 'preserved',
                 },
             });

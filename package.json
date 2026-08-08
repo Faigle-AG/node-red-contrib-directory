@@ -1,6 +1,6 @@
 {
   "name": "@faigle/node-red-contrib-directory",
-  "version": "0.1.19",
+  "version": "0.2.1",
   "description": "directories also diserve some attetion",
   "keywords": [
     "node-red"
@@ -31,11 +31,8 @@
     "prettier": "^3.9.4"
   },
   "dependencies": {
-    "@faigle/node-red-runtime-utils": "^0.4.2"
+    "@faigle/node-red-runtime-utils": "^0.6.4"
   },
-  "workspaces": [
-    "../../node-red-runtime/*"
-  ],
   "scripts": {
     "prepare": "npx --yes husky",
     "test": "mocha \"test/**/*_spec.js\"",

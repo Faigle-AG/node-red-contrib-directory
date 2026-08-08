@@ -49,7 +49,7 @@
                 },
             },
             destinationType: { value: 'str' },
-            createParent: { value: true },
+            recursive: { value: true },
         },
 
         inputs: 1,
@@ -76,12 +76,18 @@
                 typeField: $('#node-input-destinationType'),
             });
 
+            var $action = $('#node-input-action');
+            var $actionRadios = $('input[name="node-input-action-radio"]');
+
+            $actionRadios.filter('[value="' + $action.val() + '"]').prop('checked', true);
+
+            $actionRadios.on('change', function () {
+                $action.val(this.value).trigger('change');
+            });
+
             $('#node-input-dynamic').on('change', function () {
-                if ($(this).prop('checked')) {
-                    $('#file-options-group').hide();
-                } else {
-                    $('#file-options-group').show();
-                }
+                if ($(this).prop('checked')) $('#directory-options-group').hide();
+                else $('#directory-options-group').show();
             });
 
             $('#node-input-dynamic').trigger('change');
@@ -89,94 +95,80 @@
     });
 </script>
 
-<style>
-    .flex-checkbox-row {
-        display: flex;
-        align-items: center;
-        padding-left: 104px;
-        margin-bottom: 12px;
-    }
-    .flex-checkbox-row input[type='checkbox'] {
-        width: auto !important;
-        margin: 0 8px 0 0 !important;
-    }
-    .flex-checkbox-row label {
-        width: auto !important;
-        margin: 0 !important;
-    }
-
-    fieldset.node-red-fieldset {
-        border: 1px solid var(--red-ui-form-input-border-color, #ccc) !important;
-        padding: 12px !important;
-        margin-bottom: 12px !important;
-        border-radius: 4px !important;
-    }
-
-    fieldset.node-red-fieldset legend {
-        border-bottom: none !important;
-        width: auto !important;
-        padding: 0 5px !important;
-        font-size: 13px !important;
-        font-weight: bold !important;
-        color: var(--red-ui-primary-text-color, #555) !important;
-        margin-bottom: 0 !important;
-    }
-
-    .input-width-70 {
-        width: 70% !important;
-    }
-</style>
+<link rel="stylesheet" href="resources/@faigle/node-red-runtime-utils/editor.css" />
 
 <script type="text/html" data-template-name="directory-transfer">
-    <div class="form-row">
-        <label for="node-input-name">
-            <i class="fa fa-tag"></i>
-            <span>Name</span>
-        </label>
-        <input type="text" id="node-input-name" placeholder="Name" class="input-width-70" />
-    </div>
-    <div class="form-row flex-checkbox-row">
-        <input type="checkbox" id="node-input-dynamic" class="input-width-70" />
-        <label for="node-input-dynamic">
-            <i class="fa fa-usb"></i>
-            Load from msg.file
-        </label>
-    </div>
-
-    <fieldset id="file-options-group" class="node-red-fieldset">
-        <legend>File Options</legend>
-
-        <div class="form-row" id="row-action">
-            <label for="node-input-action">
-                <i class="fa fa-tasks"></i>
-                Action
+    <div class="faigle-node-editor">
+        <div class="form-row">
+            <label for="node-input-name">
+                <i class="fa fa-tag"></i>
+                <span>Name</span>
             </label>
-            <select id="node-input-action" style="width: 70%">
-                <option value="move">Move / Rename</option>
-                <option value="copy">Copy</option>
-            </select>
+            <input type="text" id="node-input-name" placeholder="Name" />
         </div>
-        <div class="form-row" id="row-source">
-            <label for="node-input-source">
-                <i class="fa fa-folder"></i>
-                Source
-            </label>
-            <input type="text" id="node-input-source" placeholder="Path to source directory" />
-            <input type="hidden" id="node-input-sourceType" />
-        </div>
-        <div class="form-row" id="row-destination">
-            <label for="node-input-destination">
-                <i class="fa fa-map-marker"></i>
-                Destination
-            </label>
-            <input type="text" id="node-input-destination" placeholder="Path to new location" />
-            <input type="hidden" id="node-input-destinationType" />
-        </div>
-    </fieldset>
 
-    <div class="form-row flex-checkbox-row" id="row-create-parent">
-        <input type="checkbox" id="node-input-createParent" />
-        <label for="node-input-createParent">Create parent folder</label>
+        <div class="form-row flex-checkbox-row">
+            <input type="checkbox" id="node-input-dynamic" />
+            <label for="node-input-dynamic">
+                <i class="fa fa-usb"></i>
+                Load from msg.file
+            </label>
+        </div>
+
+        <fieldset id="directory-options-group" class="node-red-fieldset">
+            <legend>Directory Options</legend>
+
+            <div class="form-row" id="row-action">
+                <label>
+                    <i class="fa fa-tasks"></i>
+                    Action
+                </label>
+
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="node-input-action-radio" value="move" />
+                        Move / Rename
+                    </label>
+
+                    <label>
+                        <input type="radio" name="node-input-action-radio" value="copy" />
+                        Copy
+                    </label>
+                </div>
+
+                <input type="hidden" id="node-input-action" />
+            </div>
+
+            <div class="form-row" id="row-source">
+                <label for="node-input-source">
+                    <i class="fa fa-sign-out"></i>
+                    Source Path
+                </label>
+                <input type="text" id="node-input-source" placeholder="Path to source directory" />
+                <input type="hidden" id="node-input-sourceType" />
+            </div>
+
+            <div class="form-row" id="row-destination">
+                <label for="node-input-destination">
+                    <i class="fa fa-sign-in"></i>
+                    Destination Path
+                </label>
+                <input
+                    type="text"
+                    id="node-input-destination"
+                    placeholder="Path to destination directory"
+                />
+                <input type="hidden" id="node-input-destinationType" />
+            </div>
+
+            <div class="form-row flex-checkbox-row" id="row-create-parent">
+                <input type="checkbox" id="node-input-recursive" />
+                <label for="node-input-recursive">
+                    <i class="fa fa-plus"></i>
+                    Create parent folder in Destination
+                </label>
+            </div>
+        </fieldset>
     </div>
 </script>
 
@@ -190,13 +182,13 @@ A node to move, rename, or copy directories on the file system.
 - **Load from msg.file** _boolean_ \
   If enabled, the node will ignore the UI properties and expect `msg.file.action`, `msg.file.source`, and `msg.file.destination` to be provided dynamically.
 
-- **Action** _dropdown_ \
-  The operation to perform: Move / Rename, or Copy.
+- **Action** _radio buttons_ \
+  The operation to perform: Move / Rename or Copy.
 
-- **Source** _string | msg_ \
+- **Source Path** _string | msg | flow | global | env | JSONata_ \
   The absolute path to the directory you want to transfer.
 
-- **Destination** _string | msg_ \
+- **Destination Path** _string | msg | flow | global | env | JSONata_ \
   The absolute path for the new location.
 
 - **Create parent folder** _boolean_ \

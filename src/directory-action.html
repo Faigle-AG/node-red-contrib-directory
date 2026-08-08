@@ -35,7 +35,7 @@
             sourceType: { value: 'str' },
             property: { value: 'file.content' },
             propertyType: { value: 'msg' },
-            createParent: { value: true },
+            recursive: { value: true },
         },
 
         inputs: 1,
@@ -63,118 +63,123 @@
                 typeField: $('#node-input-propertyType'),
             });
 
+            var $action = $('#node-input-action');
+            var $actionRadios = $('input[name="node-input-action-radio"]');
+
+            $actionRadios.filter('[value="' + $action.val() + '"]').prop('checked', true);
+
+            $actionRadios.on('change', function () {
+                $action.val(this.value).trigger('change');
+            });
+
+            $('#node-input-action').on('change', function () {
+                if ($(this).val() === 'create')
+                    $('#row-create-parent label').html(
+                        '<i class="fa fa-plus"></i> Create parent folder',
+                    );
+
+                if ($(this).val() === 'delete')
+                    $('#row-create-parent label').html(
+                        '<i class="fa fa-trash"></i> Delete recursive inner folders',
+                    );
+
+                if (
+                    $(this).val() === 'create' ||
+                    $(this).val() === 'delete' ||
+                    $('#node-input-dynamic').prop('checked')
+                )
+                    $('#row-create-parent').show();
+                else $('#row-create-parent').hide();
+            });
+
             $('#node-input-dynamic').on('change', function () {
-                if ($(this).prop('checked')) $('#file-options-group').hide();
-                else $('#file-options-group').show();
+                if ($(this).prop('checked')) $('#directory-options-group').hide();
+                else $('#directory-options-group').show();
 
                 $('#node-input-source').trigger('change');
                 $('#node-input-action').trigger('change');
             });
 
-            $('#node-input-action').on('change', function () {
-                if ($(this).val() === 'create' || $('#node-input-dynamic').prop('checked'))
-                    $('#row-create-parent').show();
-                else $('#row-create-parent').hide();
-            });
-
             $('#node-input-dynamic').trigger('change');
-            $('#node-input-action').trigger('change');
         },
     });
 </script>
 
-<style>
-    .flex-checkbox-row {
-        display: flex;
-        align-items: center;
-        padding-left: 104px;
-        margin-bottom: 12px;
-    }
-    .flex-checkbox-row input[type='checkbox'] {
-        width: auto !important;
-        margin: 0 8px 0 0 !important;
-    }
-    .flex-checkbox-row label {
-        width: auto !important;
-        margin: 0 !important;
-    }
-
-    fieldset.node-red-fieldset {
-        border: 1px solid var(--red-ui-form-input-border-color, #ccc) !important;
-        padding: 12px !important;
-        margin-bottom: 12px !important;
-        border-radius: 4px !important;
-    }
-
-    fieldset.node-red-fieldset legend {
-        border-bottom: none !important;
-        width: auto !important;
-        padding: 0 5px !important;
-        font-size: 13px !important;
-        font-weight: bold !important;
-        color: var(--red-ui-primary-text-color, #555) !important;
-        margin-bottom: 0 !important;
-    }
-
-    .input-width-70 {
-        width: 70% !important;
-    }
-</style>
+<link rel="stylesheet" href="resources/@faigle/node-red-runtime-utils/editor.css" />
 
 <script type="text/html" data-template-name="directory-action">
-    <div class="form-row">
-        <label for="node-input-name">
-            <i class="fa fa-tag"></i>
-            <span>Name</span>
-        </label>
-        <input type="text" id="node-input-name" placeholder="Name" class="input-width-70" />
-    </div>
-
-    <div class="form-row">
-        <label for="node-input-property">
-            <i class="fa fa-arrow-right"></i>
-            <span>Output to</span>
-        </label>
-        <input type="text" id="node-input-property" class="input-width-70" />
-        <input type="hidden" id="node-input-propertyType" />
-    </div>
-
-    <div class="form-row flex-checkbox-row">
-        <input type="checkbox" id="node-input-dynamic" class="input-width-70" />
-        <label for="node-input-dynamic">
-            <i class="fa fa-usb"></i>
-            Load from msg.file
-        </label>
-    </div>
-
-    <fieldset id="file-options-group" class="node-red-fieldset">
-        <legend>File Options</legend>
-
-        <div class="form-row" id="row-action">
-            <label for="node-input-action">
-                <i class="fa fa-tasks"></i>
-                Action
+    <div class="faigle-node-editor">
+        <div class="form-row">
+            <label for="node-input-name">
+                <i class="fa fa-tag"></i>
+                <span>Name</span>
             </label>
-            <select id="node-input-action" style="width: 70%">
-                <option value="create">Create</option>
-                <option value="delete">Delete</option>
-                <option value="list">List Contents</option>
-            </select>
+            <input type="text" id="node-input-name" placeholder="Name" />
         </div>
 
-        <div class="form-row" id="row-source">
-            <label for="node-input-source">
-                <i class="fa fa-folder"></i>
-                Source Path
+        <div class="form-row flex-checkbox-row">
+            <input type="checkbox" id="node-input-dynamic" />
+            <label for="node-input-dynamic">
+                <i class="fa fa-usb"></i>
+                Load from msg.file
             </label>
-            <input type="text" id="node-input-source" placeholder="Path to directory" />
-            <input type="hidden" id="node-input-sourceType" />
         </div>
-    </fieldset>
 
-    <div class="form-row flex-checkbox-row" id="row-create-parent">
-        <input type="checkbox" id="node-input-createParent" />
-        <label for="node-input-createParent">Create parent folder</label>
+        <fieldset id="directory-options-group" class="node-red-fieldset">
+            <legend>Directory Options</legend>
+
+            <div class="form-row" id="row-action">
+                <label>
+                    <i class="fa fa-tasks"></i>
+                    Action
+                </label>
+
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="node-input-action-radio" value="create" />
+                        Create
+                    </label>
+
+                    <label>
+                        <input type="radio" name="node-input-action-radio" value="delete" />
+                        Delete
+                    </label>
+
+                    <label>
+                        <input type="radio" name="node-input-action-radio" value="list" />
+                        List Contents
+                    </label>
+                </div>
+
+                <input type="hidden" id="node-input-action" />
+            </div>
+
+            <div class="form-row" id="row-source">
+                <label for="node-input-source">
+                    <i class="fa fa-folder-open"></i>
+                    Source Path
+                </label>
+                <input type="text" id="node-input-source" placeholder="Path to directory" />
+                <input type="hidden" id="node-input-sourceType" />
+            </div>
+
+            <div class="form-row flex-checkbox-row" id="row-create-parent">
+                <input type="checkbox" id="node-input-recursive" />
+                <label for="node-input-recursive">
+                    <i class="fa fa-plus"></i>
+                    Recursive
+                </label>
+            </div>
+        </fieldset>
+
+        <div class="form-row">
+            <label for="node-input-property">
+                <i class="fa fa-arrow-right"></i>
+                <span>Output to</span>
+            </label>
+            <input type="text" id="node-input-property" />
+            <input type="hidden" id="node-input-propertyType" />
+        </div>
     </div>
 </script>
 
@@ -186,19 +191,24 @@ A node to create, delete, or list the contents of directories on the file system
 ### Properties
 
 - **Output to** _msg | flow | global_ \
-  The property where the result data (the directory contents or success boolean) will be put.
+  The property where the action result is stored.
+  - **Create / Delete**: `true` on success.
+  - **List Contents**: the complete directory metadata object, including `contents`.
 
 - **Load from msg.file** _boolean_ \
-  If enabled, the node will ignore the UI properties and expect `msg.file.action` and `msg.file.path` to be provided dynamically.
+  If enabled, the node ignores the static Directory Options and reads `msg.file.action`, `msg.file.path`, and, for Create/Delete, `msg.file.recursive`.
 
-- **Action** _dropdown_ \
+- **Action** _radio buttons_ \
   The operation to perform: Create, Delete, or List Contents.
 
-- **Source Path** _string | msg_ \
+- **Source Path** _string | msg | flow | global | env | JSONata_ \
   The absolute path to the directory you want to operate on.
 
-- **Create parent folder** _boolean_ \
-  If enabled during a `Create` action, missing parent directories in the path will be created automatically.
+- **Recursive** _boolean_ \
+  Controls recursive behavior for Create and Delete.
+  - **Create**: creates missing parent directories when enabled.
+  - **Delete**: removes contained files and subdirectories when enabled.
+  - **List Contents**: not used.
 
 ---
 
@@ -208,36 +218,44 @@ A node to create, delete, or list the contents of directories on the file system
   The incoming message triggers the operation.
 
   - **msg.file.action** _string_ \
-    The action to execute if triggered dynamically (`create`, `delete`, or `list`).
+    The action to execute in dynamic mode (`create`, `delete`, or `list`).
 
   - **msg.file.path** _string_ \
-    The destination path of the directory.
+    The directory path to operate on in dynamic mode.
+
+  - **msg.file.recursive** _boolean_ \
+    Controls recursive Create/Delete behavior in dynamic mode.
 
 ### Outputs
 
-- **output property** _array | boolean_ \
-    - **List**: Returns an array of strings representing the files and folders inside the target directory.
-    - **Create / Delete**: Returns `true` on success.
+- **configured output property** _object | boolean_ \
+  The value written to the configured **Output to** property.
+  - **Create / Delete**: `true` on success.
+  - **List Contents**: the directory metadata object described below, including `contents`.
 
-- **msg.file** _object_ \
-  The object containing the event details.
+- **directory metadata** _object_ \
+  For **Create / Delete**, this metadata is merged into `msg.file`. \
+  For **List Contents**, it is written to the configured output property.
 
-  - **msg.file.filetype** _string_ \
-    The type of item that triggered the event (`directory`).
+  - **filetype** _string_ \
+    The item type (`directory`).
 
-  - **msg.file.path** _string_ \
-    The complete, normalized "absolute" path to the directory.
+  - **path** _string_ \
+    The complete normalized path to the directory.
 
-  - **msg.file.dir** _string_ \
-    The "absolute" path to the parent directory.
+  - **dir** _string_ \
+    The parent directory path.
 
-  - **msg.file.base** _string_ \
-    The name of the directory.
+  - **base** _string_ \
+    The directory name.
 
-  - **msg.file.name** _string_ \
-    The name of the directory.
+  - **name** _string_ \
+    The directory name without an extension.
 
-  - **msg.file.contents** _array_ \
-    An array containing the filenames inside the directory if the action was `List Contents`.
+  - **ext** _string_ \
+    The parsed extension, normally empty for directories.
+
+  - **contents** _array_ \
+    Present for **List Contents** and contains the filenames and directory names inside the target directory.
 </script>
 <!-- @formatter:on -->

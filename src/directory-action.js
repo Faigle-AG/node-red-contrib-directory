@@ -12,7 +12,7 @@ module.exports = function (RED) {
         this.sourceType = config.sourceType || 'str';
         this.property = config.property || 'payload';
         this.propertyType = config.propertyType || 'msg';
-        this.createParent = config.createParent !== false;
+        this.recursive = config.recursive !== false;
 
         var node = this;
         extendNode(node);
@@ -23,6 +23,7 @@ module.exports = function (RED) {
                 const sourceRaw = node.dynamic
                     ? msg.file && msg.file.path
                     : await node.getTypedProperty(node.source, node.sourceType, msg);
+                const recursive = node.dynamic ? msg.file && msg.file.recursive : node.recursive;
 
                 if (!sourceRaw) throw new Error('Source directory path is missing');
                 if (!currentAction) throw new Error('Action is missing');
@@ -42,40 +43,32 @@ module.exports = function (RED) {
                 const setOutputData = async (data) => {
                     await node.setTypedProperty(node.property, node.propertyType, msg, data);
                 };
-                //                const setOutputData = (data) => {
-                //                    if (node.propertyType === 'msg')
-                //                        RED.util.setMessageProperty(msg, node.property, data, true);
-                //                    else if (node.propertyType === 'flow')
-                //                        node.context().flow.set(node.property, data);
-                //                    else if (node.propertyType === 'global')
-                //                        node.context().global.set(node.property, data);
-                //                };
 
                 switch (currentAction) {
                     case 'create':
                         fs.mkdirSync(targetPath, {
-                            recursive: node.createParent,
+                            recursive: recursive,
                         });
                         msg.file = { ...msg.file, ...file };
-                        setOutputData(true);
+                        await setOutputData(true);
                         finishAction(`Created ${file.base}`);
                         break;
 
                     case 'delete':
                         fs.rmSync(targetPath, {
-                            recursive: true,
+                            recursive: recursive,
                             force: true,
                         });
                         msg.file = { ...msg.file, ...file };
-                        setOutputData(true);
+                        await setOutputData(true);
                         finishAction(`Deleted ${file.base}`);
                         break;
 
                     case 'list': {
                         const files = fs.readdirSync(targetPath);
+                        file = { ...msg.file, ...file };
                         file.contents = files;
-                        msg.file = { ...msg.file, ...file };
-                        setOutputData(files);
+                        await setOutputData(file);
                         finishAction(`Listed ${files.length} items`);
                         break;
                     }

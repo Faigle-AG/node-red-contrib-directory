@@ -10,6 +10,8 @@ module.exports = function (RED) {
         this.source = path.normalize(
             RED.util.evaluateNodeProperty(config.source, this.sourceType, this),
         );
+        this.target = config.target || 'file';
+        this.targetType = config.targetType || 'msg';
         this.depth = parseInt(config.depth) || 0;
         this.awaitWriteFinish = config.awaitWriteFinish;
         this.stabilityThreshold = parseInt(config.stabilityThreshold) || 2000;
@@ -56,39 +58,49 @@ module.exports = function (RED) {
 
                 const parsed = path.parse(filename);
                 return {
-                    file: {
-                        action: eventType,
-                        filetype: fileType,
-                        source: node.source,
-                        path: path.normalize(filename),
-                        dir: parsed.dir,
-                        name: parsed.name,
-                        base: parsed.base,
-                        ext: parsed.ext,
-                        stats: stats ? stats : null,
-                    },
+                    action: eventType,
+                    filetype: fileType,
+                    source: node.source,
+                    path: path.normalize(filename),
+                    dir: parsed.dir,
+                    name: parsed.name,
+                    base: parsed.base,
+                    ext: parsed.ext,
+                    stats: stats ? stats : null,
                 };
             }
 
+            async function sendEvent(filename, stats, eventType, fileType) {
+                try {
+                    const msg = {};
+                    const file = createMsg(filename, stats, eventType, fileType);
+
+                    await node.setTypedProperty(node.target, node.targetType, msg, file);
+                    node.send(msg);
+                } catch (err) {
+                    node.status.failed('Error : ' + err.message);
+                    node.error(err);
+                }
+            }
+
             if (node.filterFiles) {
-                if (node.watchAdd)
-                    watcher.on('add', (f, s) => node.send(createMsg(f, s, 'add', 'file')));
+                if (node.watchAdd) watcher.on('add', (f, s) => void sendEvent(f, s, 'add', 'file'));
                 if (node.watchChange)
-                    watcher.on('change', (f, s) => node.send(createMsg(f, s, 'change', 'file')));
+                    watcher.on('change', (f, s) => void sendEvent(f, s, 'change', 'file'));
                 if (node.watchDelete)
-                    watcher.on('unlink', (f) => node.send(createMsg(f, null, 'delete', 'file')));
+                    watcher.on('unlink', (f) => void sendEvent(f, null, 'delete', 'file'));
             }
 
             if (node.filterDirs) {
                 if (node.watchAdd)
                     watcher.on('addDir', (f, s) => {
                         if (path.normalize(f) === normalizedTarget) return;
-                        node.send(createMsg(f, s, 'add', 'directory'));
+                        void sendEvent(f, s, 'add', 'directory');
                     });
                 if (node.watchDelete)
                     watcher.on('unlinkDir', (f) => {
                         if (path.normalize(f) === normalizedTarget) return;
-                        node.send(createMsg(f, null, 'delete', 'directory'));
+                        void sendEvent(f, null, 'delete', 'directory');
                     });
             }
 

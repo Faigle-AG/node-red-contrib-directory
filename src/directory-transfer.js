@@ -12,7 +12,7 @@ module.exports = function (RED) {
         this.sourceType = config.sourceType || 'str';
         this.destination = config.destination;
         this.destinationType = config.destinationType || 'str';
-        this.createParent = config.createParent !== false;
+        this.recursive = config.recursive !== false;
 
         var node = this;
         extendNode(node);
@@ -26,6 +26,7 @@ module.exports = function (RED) {
                 const destRaw = node.dynamic
                     ? msg.file && msg.file.destination
                     : await node.getTypedProperty(node.destination, node.destinationType, msg);
+                const recursive = node.dynamic ? msg.file && msg.file.recursive : node.recursive;
 
                 if (!currentAction) throw new Error('Action is missing');
                 if (!srcRaw) throw new Error('Source path is missing');
@@ -40,7 +41,7 @@ module.exports = function (RED) {
                     return;
                 }
 
-                if (node.createParent) fs.mkdirSync(path.dirname(dstPath), { recursive: true });
+                if (recursive) fs.mkdirSync(path.dirname(dstPath), { recursive: true });
 
                 const parsed = path.parse(dstPath);
 
@@ -58,21 +59,21 @@ module.exports = function (RED) {
 
                 switch (currentAction) {
                     case 'copy':
-                        fs.cpSync(srcPath, dstPath, { recursive: true });
+                        fs.cpSync(srcPath, dstPath, { recursive: recursive });
                         msg.file = { ...msg.file, ...file };
                         finishAction(`Copied ${path.basename(srcPath)}`, srcPath, dstPath);
                         break;
 
                     case 'move':
                         try {
-                            fs.renameSync(srcPath, dstPath);
+                            fs.renameSync(srcPath, dstPath, { recursive: recursive });
                         } catch (err) {
                             if (err.code === 'EXDEV') {
                                 fs.cpSync(srcPath, dstPath, {
-                                    recursive: true,
+                                    recursive: recursive,
                                 });
                                 fs.rmSync(srcPath, {
-                                    recursive: true,
+                                    recursive: recursive,
                                     force: true,
                                 });
                             } else throw err;

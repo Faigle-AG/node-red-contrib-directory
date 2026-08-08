@@ -81,6 +81,7 @@ describe('directory-action node', function () {
                 sourceType: 'str',
                 property: 'payload',
                 propertyType: 'msg',
+                recursive: true,
                 wires: [['h1']],
             },
             { id: 'h1', type: 'helper' },
@@ -131,11 +132,22 @@ describe('directory-action node', function () {
             const h1 = helper.getNode('h1');
 
             h1.on('input', function (msg) {
-                assert.deepEqual([...msg.payload].sort(), ['a.txt', 'b.txt', 'subdir']);
-                assert.deepEqual([...msg.file.contents].sort(), ['a.txt', 'b.txt', 'subdir']);
-                assert.equal(msg.file.filetype, 'directory');
-                assert.equal(msg.file.path, path.normalize(target));
-                done();
+                try {
+                    assert.deepEqual([...msg.payload.contents].sort(), [
+                        'a.txt',
+                        'b.txt',
+                        'subdir',
+                    ]);
+                    assert.equal(msg.payload.filetype, 'directory');
+                    assert.equal(msg.payload.path, path.normalize(target));
+                    assert.equal(msg.payload.dir, path.dirname(target));
+                    assert.equal(msg.payload.base, 'list');
+                    assert.equal(msg.payload.name, 'list');
+                    assert.equal(msg.file, undefined);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
 
             n1.receive({});
@@ -197,12 +209,17 @@ describe('directory-action node', function () {
             const h1 = helper.getNode('h1');
 
             h1.on('input', function (msg) {
-                assert.equal(fs.existsSync(target), true);
-                assert.equal(msg.payload, true);
-                assert.equal(msg.file.action, 'create');
-                assert.equal(msg.file.path, path.normalize(target));
-                assert.equal(msg.file.extra, 'preserved');
-                done();
+                try {
+                    assert.equal(fs.existsSync(target), true);
+                    assert.equal(msg.payload, true);
+                    assert.equal(msg.file.action, 'create');
+                    assert.equal(msg.file.path, path.normalize(target));
+                    assert.equal(msg.file.recursive, true);
+                    assert.equal(msg.file.extra, 'preserved');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
 
             n1.receive({
@@ -210,6 +227,7 @@ describe('directory-action node', function () {
                     action: 'create',
                     path: target,
                     extra: 'preserved',
+                    recursive: true,
                 },
             });
         });
@@ -258,7 +276,7 @@ describe('directory-action node', function () {
         });
     });
 
-    it('fails to create nested directories if createParent is false', function (done) {
+    it('fails to create nested directories if recursive is false', function (done) {
         const target = path.join(WORK_DIR, 'no-parent', 'nested');
         const flow = [
             {
@@ -267,16 +285,20 @@ describe('directory-action node', function () {
                 action: 'create',
                 source: target,
                 sourceType: 'str',
-                createParent: false,
+                recursive: false,
             },
         ];
 
         helper.load(directoryActionNode, flow, function () {
             const n1 = helper.getNode('n1');
             n1.on('call:error', function (call) {
-                assert.equal(fs.existsSync(target), false);
-                assert.equal(call.args[0].code, 'ENOENT');
-                done();
+                try {
+                    assert.equal(fs.existsSync(target), false);
+                    assert.equal(call.args[0].code, 'ENOENT');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
             n1.receive({});
         });
@@ -304,8 +326,17 @@ describe('directory-action node', function () {
             const h1 = helper.getNode('h1');
 
             h1.on('input', function () {
-                assert.deepEqual(n1.context().flow.get('testOutput'), []);
-                done();
+                try {
+                    const output = n1.context().flow.get('testOutput');
+                    assert.equal(output.filetype, 'directory');
+                    assert.equal(output.path, path.normalize(target));
+                    assert.equal(output.dir, path.dirname(target));
+                    assert.equal(output.base, 'flow-output');
+                    assert.deepEqual(output.contents, []);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
 
             n1.receive({});
@@ -333,8 +364,17 @@ describe('directory-action node', function () {
             const h1 = helper.getNode('h1');
 
             h1.on('input', function () {
-                assert.deepEqual(n1.context().global.get('testOutput'), []);
-                done();
+                try {
+                    const output = n1.context().global.get('testOutput');
+                    assert.equal(output.filetype, 'directory');
+                    assert.equal(output.path, path.normalize(target));
+                    assert.equal(output.dir, path.dirname(target));
+                    assert.equal(output.base, 'global-output');
+                    assert.deepEqual(output.contents, []);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
 
             n1.receive({});

@@ -13,6 +13,15 @@
                 },
             },
             sourceType: { value: 'str' },
+            target: {
+                value: 'file',
+                validate: function (v) {
+                    if (!v || v.trim() === '') return false;
+                    var builtInValidator = RED.validators.typedInput('targetType');
+                    return builtInValidator.call(this, v);
+                },
+            },
+            targetType: { value: 'msg' },
             depth: { value: 0 },
             watchAdd: { value: true },
             watchChange: { value: false },
@@ -44,6 +53,12 @@
                 typeField: $('#node-input-sourceType'),
             });
 
+            $('#node-input-target').typedInput({
+                default: 'msg',
+                types: ['msg', 'flow', 'global'],
+                typeField: $('#node-input-targetType'),
+            });
+
             $('#node-input-ignoredFiles').typedInput({
                 default: this.ignoredFilesType || 're',
                 types: ['re'],
@@ -64,167 +79,130 @@
     });
 </script>
 
-<style>
-    .flex-checkbox-row {
-        display: flex;
-        align-items: center;
-        padding-left: 104px;
-        margin-bottom: 12px;
-    }
-    .flex-checkbox-row input[type='checkbox'] {
-        width: auto !important;
-        margin: 0 8px 0 0 !important;
-    }
-    .flex-checkbox-row label {
-        width: auto !important;
-        margin: 0 !important;
-    }
-
-    fieldset.node-red-fieldset {
-        border: 1px solid var(--red-ui-form-input-border-color, #ccc) !important;
-        padding: 12px !important;
-        margin-bottom: 12px !important;
-        border-radius: 4px !important;
-    }
-
-    fieldset.node-red-fieldset legend {
-        border-bottom: none !important;
-        width: auto !important;
-        padding: 0 5px !important;
-        font-size: 13px !important;
-        font-weight: bold !important;
-        color: var(--red-ui-primary-text-color, #555) !important;
-        margin-bottom: 0 !important;
-    }
-
-    .input-width-70 {
-        width: 70% !important;
-    }
-</style>
+<link rel="stylesheet" href="resources/@faigle/node-red-runtime-utils/editor.css" />
 
 <script type="text/html" data-template-name="directory-watch">
-    <div class="form-row">
-        <label for="node-input-name">
-            <i class="fa fa-tag"></i>
-            <span>Name</span>
-        </label>
-        <input type="text" id="node-input-name" placeholder="Name" class="input-width-70" />
+    <div class="faigle-node-editor">
+        <div class="form-row">
+            <label for="node-input-name">
+                <i class="fa fa-tag"></i>
+                <span>Name</span>
+            </label>
+            <input type="text" id="node-input-name" placeholder="Name" />
+        </div>
+
+        <div class="form-row">
+            <label for="node-input-source">
+                <i class="fa fa-folder-open"></i>
+                Source Path
+            </label>
+            <input type="text" id="node-input-source" placeholder="Path to watched directory" />
+            <input type="hidden" id="node-input-sourceType" />
+        </div>
+
+        <fieldset class="node-red-fieldset">
+            <legend>Watch Options</legend>
+
+            <div class="form-row">
+                <label>
+                    <i class="fa fa-bolt"></i>
+                    Events
+                </label>
+
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="node-input-watchAdd" />
+                        Add
+                    </label>
+
+                    <label>
+                        <input type="checkbox" id="node-input-watchChange" />
+                        Change
+                    </label>
+
+                    <label>
+                        <input type="checkbox" id="node-input-watchDelete" />
+                        Delete
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label>
+                    <i class="fa fa-filter"></i>
+                    Types
+                </label>
+
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="node-input-filterFiles" />
+                        <i class="fa fa-file"></i>
+                        Files
+                    </label>
+
+                    <label>
+                        <input type="checkbox" id="node-input-filterDirs" />
+                        <i class="fa fa-folder"></i>
+                        Directories
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label for="node-input-ignoredFiles">
+                    <i class="fa fa-file-excel-o"></i>
+                    Ignore pattern
+                </label>
+                <input
+                    type="text"
+                    id="node-input-ignoredFiles"
+                    placeholder="Regex for excluded files"
+                />
+                <input type="hidden" id="node-input-ignoredFilesType" />
+            </div>
+
+            <div class="form-row">
+                <label for="node-input-depth">
+                    <i class="fa fa-sitemap"></i>
+                    Depth
+                </label>
+                <input type="number" id="node-input-depth" />
+            </div>
+
+            <div class="form-row flex-checkbox-row">
+                <input type="checkbox" id="node-input-awaitWriteFinish" />
+                <label for="node-input-awaitWriteFinish">
+                    <i class="fa fa-clock-o"></i>
+                    Await write finish
+                </label>
+            </div>
+
+            <div class="form-row" id="row-stabilityThreshold">
+                <label for="node-input-stabilityThreshold">
+                    <i class="fa fa-hourglass-half"></i>
+                    Threshold
+                </label>
+                <input type="number" id="node-input-stabilityThreshold" />
+            </div>
+
+            <div class="form-row flex-checkbox-row">
+                <input type="checkbox" id="node-input-ignoreInitial" />
+                <label for="node-input-ignoreInitial">
+                    <i class="fa fa-history"></i>
+                    On start ignore files in folder
+                </label>
+            </div>
+        </fieldset>
+
+        <div class="form-row">
+            <label for="node-input-target">
+                <i class="fa fa-arrow-right"></i>
+                Output To
+            </label>
+            <input type="text" id="node-input-target" />
+            <input type="hidden" id="node-input-targetType" />
+        </div>
     </div>
-
-    <div class="form-row">
-        <label for="node-input-source">
-            <i class="fa fa-folder-open"></i>
-            Source
-        </label>
-        <input
-            type="text"
-            id="node-input-source"
-            placeholder="Path to watching folder"
-            class="input-width-70"
-        />
-        <input type="hidden" id="node-input-sourceType" />
-    </div>
-
-    <fieldset class="node-red-fieldset">
-        <legend>Watch Options</legend>
-
-        <div class="form-row">
-            <label>
-                <i class="fa fa-bolt"></i>
-                Events:
-            </label>
-            <input
-                type="checkbox"
-                id="node-input-watchAdd"
-                style="width: auto; margin-right: 5px;"
-            />
-            <label style="width: auto; margin-right: 15px;">Add</label>
-            <input
-                type="checkbox"
-                id="node-input-watchChange"
-                style="width: auto; margin-right: 5px;"
-            />
-            <label style="width: auto; margin-right: 15px;">Change</label>
-            <input
-                type="checkbox"
-                id="node-input-watchDelete"
-                style="width: auto; margin-right: 5px;"
-            />
-            <label style="width: auto;">Delete</label>
-        </div>
-
-        <div class="form-row">
-            <label>
-                <i class="fa fa-filter"></i>
-                Types:
-            </label>
-            <input
-                type="checkbox"
-                id="node-input-filterFiles"
-                style="width: auto; margin-right: 5px;"
-            />
-            <label style="width: auto; margin-right: 15px;">
-                <i class="fa fa-file"></i>
-                Files
-            </label>
-            <input
-                type="checkbox"
-                id="node-input-filterDirs"
-                style="width: auto; margin-right: 5px;"
-            />
-            <label style="width: auto;">
-                <i class="fa fa-folder"></i>
-                Directories
-            </label>
-        </div>
-
-        <div class="form-row">
-            <label for="node-input-ignoredFiles">
-                <i class="fa fa-file-excel-o"></i>
-                Ignore pattern
-            </label>
-            <input
-                type="text"
-                id="node-input-ignoredFiles"
-                placeholder="Regex for exclude files"
-                class="input-width-70"
-            />
-            <input type="hidden" id="node-input-ignoredFilesType" />
-        </div>
-
-        <div class="form-row">
-            <label for="node-input-depth">
-                <i class="fa fa-sitemap"></i>
-                Depth
-            </label>
-            <input type="number" id="node-input-depth" class="input-width-70" />
-        </div>
-
-        <div class="form-row flex-checkbox-row">
-            <input type="checkbox" id="node-input-awaitWriteFinish" />
-            <label for="node-input-awaitWriteFinish">
-                <i class="fa fa-clock-o"></i>
-                Await write finish
-            </label>
-        </div>
-
-        <div class="form-row" id="row-stabilityThreshold">
-            <label for="node-input-stabilityThreshold">
-                <i class="fa fa-hourglass-half"></i>
-                Threshold
-            </label>
-            <input type="number" id="node-input-stabilityThreshold" style="width: 100px;" />
-            <span>ms</span>
-        </div>
-
-        <div class="form-row flex-checkbox-row">
-            <input type="checkbox" id="node-input-ignoreInitial" />
-            <label for="node-input-ignoreInitial">
-                <i class="fa fa-reply-all" style="transform: scaleX(-1);"></i>
-                On start ignore files in folder
-            </label>
-        </div>
-    </fieldset>
 </script>
 
 <!-- @formatter:off -->
@@ -234,8 +212,11 @@ A node that watches a directory to detect added, changed, and deleted files or d
 
 ### Properties
 
-- **Source** _string_ \
+- **Source Path** _string | flow | global | env | JSONata_ \
   Path of the directory to watch.
+
+- **Output To** _msg | flow | global_ \
+  The property where the complete watch event object will be stored. Defaults to `msg.file`.
 
 - **Events** _checkboxes_ \
   Select which events will trigger a message: Add, Change, or Delete.
@@ -266,8 +247,8 @@ A node that watches a directory to detect added, changed, and deleted files or d
 
 ### Outputs
 
-- **msg.file** _object_ \
-  The object containing the event details.
+- **configured output property** _object_ \
+  The object containing the event details. Defaults to `msg.file`.
 
   - **msg.file.action** _string_ \
     The event that triggered the node (`add`, `change`, or `delete`).
