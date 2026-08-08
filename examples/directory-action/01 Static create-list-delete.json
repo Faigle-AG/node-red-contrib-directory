@@ -1,0 +1,161 @@
+[
+  {
+    "id": "da1001",
+    "type": "inject",
+    "name": "Create nested directory",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 280,
+    "y": 240,
+    "wires": [
+      [
+        "da1002"
+      ]
+    ]
+  },
+  {
+    "id": "da1002",
+    "type": "directory-action",
+    "name": "Create directory",
+    "dynamic": false,
+    "action": "create",
+    "source": "./test/data/directory-action-example/nested",
+    "sourceType": "str",
+    "property": "file.content",
+    "propertyType": "msg",
+    "recursive": true,
+    "x": 540,
+    "y": 240,
+    "wires": [
+      [
+        "da1003"
+      ]
+    ]
+  },
+  {
+    "id": "da1003",
+    "type": "debug",
+    "name": "Create result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 780,
+    "y": 240,
+    "wires": []
+  },
+  {
+    "id": "da1011",
+    "type": "inject",
+    "name": "List example directory",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 280,
+    "y": 320,
+    "wires": [
+      [
+        "da1012"
+      ]
+    ]
+  },
+  {
+    "id": "da1012",
+    "type": "directory-action",
+    "name": "List directory",
+    "dynamic": false,
+    "action": "list",
+    "source": "./test/data/directory-action-example",
+    "sourceType": "str",
+    "property": "file",
+    "propertyType": "msg",
+    "recursive": false,
+    "x": 530,
+    "y": 320,
+    "wires": [
+      [
+        "da1013"
+      ]
+    ]
+  },
+  {
+    "id": "da1013",
+    "type": "debug",
+    "name": "List result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 780,
+    "y": 320,
+    "wires": []
+  },
+  {
+    "id": "da1021",
+    "type": "inject",
+    "name": "Delete nested directory",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 280,
+    "y": 400,
+    "wires": [
+      [
+        "da1022"
+      ]
+    ]
+  },
+  {
+    "id": "da1022",
+    "type": "directory-action",
+    "name": "Delete directory",
+    "dynamic": false,
+    "action": "delete",
+    "source": "./test/data/directory-action-example",
+    "sourceType": "str",
+    "property": "file.content",
+    "propertyType": "msg",
+    "recursive": true,
+    "x": 540,
+    "y": 400,
+    "wires": [
+      [
+        "da1023"
+      ]
+    ]
+  },
+  {
+    "id": "da1023",
+    "type": "debug",
+    "name": "Delete result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 790,
+    "y": 400,
+    "wires": []
+  }
+]

@@ -1,0 +1,152 @@
+[
+  {
+    "id": "dt3001",
+    "type": "inject",
+    "name": "Setup source for copy",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 240,
+    "y": 1100,
+    "wires": [
+      [
+        "dt3002"
+      ]
+    ]
+  },
+  {
+    "id": "dt3002",
+    "type": "directory-action",
+    "name": "Create copy source",
+    "dynamic": false,
+    "action": "create",
+    "source": "./test/data/directory-transfer-dynamic/source-copy",
+    "sourceType": "str",
+    "property": "file.content",
+    "propertyType": "msg",
+    "x": 470,
+    "y": 1100,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "dt3004",
+    "type": "inject",
+    "name": "Dynamic copy",
+    "props": [
+      {
+        "p": "file",
+        "v": "{\"action\":\"copy\",\"source\":\"./test/data/directory-transfer-dynamic/source-copy\",\"destination\":\"./test/data/directory-transfer-dynamic/copied\",\"recursive\":true}",
+        "vt": "json"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 730,
+    "y": 1100,
+    "wires": [
+      [
+        "dt3006"
+      ]
+    ]
+  },
+  {
+    "id": "dt3007",
+    "type": "inject",
+    "name": "Setup source for move",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 240,
+    "y": 1160,
+    "wires": [
+      [
+        "dt3008"
+      ]
+    ]
+  },
+  {
+    "id": "dt3008",
+    "type": "directory-action",
+    "name": "Create move source",
+    "dynamic": false,
+    "action": "create",
+    "source": "./test/data/directory-transfer-dynamic/source-move",
+    "sourceType": "str",
+    "property": "file.content",
+    "propertyType": "msg",
+    "x": 480,
+    "y": 1160,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "dt3010",
+    "type": "inject",
+    "name": "Dynamic move",
+    "props": [
+      {
+        "p": "file",
+        "v": "{\"action\":\"move\",\"source\":\"./test/data/directory-transfer-dynamic/source-move\",\"destination\":\"./test/data/directory-transfer-dynamic/moved\",\"recursive\":true}",
+        "vt": "json"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 740,
+    "y": 1160,
+    "wires": [
+      [
+        "dt3006"
+      ]
+    ]
+  },
+  {
+    "id": "dt3006",
+    "type": "directory-transfer",
+    "name": "Dynamic directory transfer",
+    "dynamic": true,
+    "action": "move",
+    "source": "",
+    "sourceType": "str",
+    "destination": "",
+    "destinationType": "str",
+    "x": 1030,
+    "y": 1140,
+    "wires": [
+      [
+        "dt3011"
+      ]
+    ]
+  },
+  {
+    "id": "dt3011",
+    "type": "debug",
+    "name": "Transfer result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "file",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1280,
+    "y": 1140,
+    "wires": []
+  }
+]

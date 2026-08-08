@@ -1,0 +1,61 @@
+[
+  {
+    "id": "da3001",
+    "type": "inject",
+    "name": "List test/data",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 260,
+    "y": 740,
+    "wires": [
+      [
+        "da3002"
+      ]
+    ]
+  },
+  {
+    "id": "da3002",
+    "type": "directory-action",
+    "name": "List to msg.result",
+    "dynamic": false,
+    "action": "list",
+    "source": "./test/data",
+    "sourceType": "str",
+    "property": "result",
+    "propertyType": "msg",
+    "recursive": false,
+    "x": 510,
+    "y": 740,
+    "wires": [
+      [
+        "da3003"
+      ]
+    ]
+  },
+  {
+    "id": "da3003",
+    "type": "debug",
+    "name": "msg.result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "result",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 750,
+    "y": 740,
+    "wires": []
+  }
+]

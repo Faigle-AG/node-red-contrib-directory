@@ -1,0 +1,115 @@
+[
+  {
+    "id": "dw2001",
+    "type": "directory-watch",
+    "name": "Watch test/data directories",
+    "source": "./test/data",
+    "sourceType": "str",
+    "target": "file",
+    "targetType": "msg",
+    "depth": 0,
+    "watchAdd": true,
+    "watchChange": false,
+    "watchDelete": true,
+    "filterFiles": false,
+    "filterDirs": true,
+    "awaitWriteFinish": false,
+    "stabilityThreshold": 500,
+    "ignoreInitial": true,
+    "ignoredFiles": "",
+    "ignoredFilesType": "re",
+    "x": 270,
+    "y": 140,
+    "wires": [
+      [
+        "dw2002"
+      ]
+    ]
+  },
+  {
+    "id": "dw2002",
+    "type": "debug",
+    "name": "msg.file",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "file",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 500,
+    "y": 140,
+    "wires": []
+  },
+  {
+    "id": "dw2010",
+    "type": "inject",
+    "name": "Create watched directory",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 270,
+    "y": 240,
+    "wires": [
+      [
+        "dw2011"
+      ]
+    ]
+  },
+  {
+    "id": "dw2011",
+    "type": "directory-action",
+    "name": "Create watched directory",
+    "dynamic": false,
+    "action": "create",
+    "source": "./test/data/directory-watch-example",
+    "sourceType": "str",
+    "property": "file.content",
+    "propertyType": "msg",
+    "recursive": false,
+    "x": 550,
+    "y": 240,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "dw2020",
+    "type": "inject",
+    "name": "Delete watched directory",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 270,
+    "y": 300,
+    "wires": [
+      [
+        "dw2021"
+      ]
+    ]
+  },
+  {
+    "id": "dw2021",
+    "type": "directory-action",
+    "name": "Delete watched directory",
+    "dynamic": false,
+    "action": "delete",
+    "source": "./test/data/directory-watch-example",
+    "sourceType": "str",
+    "property": "file.content",
+    "propertyType": "msg",
+    "recursive": true,
+    "x": 550,
+    "y": 300,
+    "wires": [
+      []
+    ]
+  }
+]

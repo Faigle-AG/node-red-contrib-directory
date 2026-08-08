@@ -1,0 +1,162 @@
+[
+  {
+    "id": "dw1001",
+    "type": "directory-watch",
+    "name": "Watch test/data files",
+    "source": "./test/data",
+    "sourceType": "str",
+    "target": "watchEvent",
+    "targetType": "msg",
+    "depth": 0,
+    "watchAdd": true,
+    "watchChange": true,
+    "watchDelete": true,
+    "filterFiles": true,
+    "filterDirs": false,
+    "awaitWriteFinish": true,
+    "stabilityThreshold": 500,
+    "ignoreInitial": true,
+    "ignoredFiles": "",
+    "ignoredFilesType": "re",
+    "x": 230,
+    "y": 100,
+    "wires": [
+      [
+        "dw1002"
+      ]
+    ]
+  },
+  {
+    "id": "dw1002",
+    "type": "debug",
+    "name": "msg.watchEvent",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "watchEvent",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 480,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "dw1010",
+    "type": "inject",
+    "name": "Create / overwrite watched file",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "Created by directory-watch example",
+    "payloadType": "str",
+    "x": 260,
+    "y": 180,
+    "wires": [
+      [
+        "dw1011"
+      ]
+    ]
+  },
+  {
+    "id": "dw1011",
+    "type": "file-write",
+    "name": "Write watched file",
+    "dynamic": false,
+    "action": "write",
+    "target": "./test/data/directory-watch-example.txt",
+    "targetType": "str",
+    "data": "payload",
+    "dataType": "msg",
+    "createDir": true,
+    "x": 550,
+    "y": 180,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "dw1020",
+    "type": "inject",
+    "name": "Append watched file",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "Changed by directory-watch example",
+    "payloadType": "str",
+    "x": 230,
+    "y": 240,
+    "wires": [
+      [
+        "dw1021"
+      ]
+    ]
+  },
+  {
+    "id": "dw1021",
+    "type": "file-write",
+    "name": "Append watched file",
+    "dynamic": false,
+    "action": "append",
+    "target": "./test/data/directory-watch-example.txt",
+    "targetType": "str",
+    "data": "payload",
+    "dataType": "msg",
+    "createDir": true,
+    "x": 540,
+    "y": 240,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "dw1030",
+    "type": "inject",
+    "name": "Delete watched file",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 230,
+    "y": 300,
+    "wires": [
+      [
+        "dw1031"
+      ]
+    ]
+  },
+  {
+    "id": "dw1031",
+    "type": "file-transfer",
+    "name": "Delete watched file",
+    "dynamic": false,
+    "action": "delete",
+    "source": "./test/data/directory-watch-example.txt",
+    "sourceType": "str",
+    "destination": "",
+    "destinationType": "str",
+    "createDir": false,
+    "x": 550,
+    "y": 300,
+    "wires": [
+      []
+    ]
+  }
+]

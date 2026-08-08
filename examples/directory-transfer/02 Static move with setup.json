@@ -1,0 +1,74 @@
+[
+  {
+    "id": "dt2001",
+    "type": "inject",
+    "name": "Create source directory",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 240,
+    "y": 980,
+    "wires": [
+      [
+        "dt2002"
+      ]
+    ]
+  },
+  {
+    "id": "dt2002",
+    "type": "directory-action",
+    "name": "Create source",
+    "dynamic": false,
+    "action": "create",
+    "source": "./test/data/directory-transfer-move/source",
+    "sourceType": "str",
+    "property": "file.content",
+    "propertyType": "msg",
+    "recursive": true,
+    "x": 470,
+    "y": 980,
+    "wires": [
+      [
+        "dt2003"
+      ]
+    ]
+  },
+  {
+    "id": "dt2003",
+    "type": "directory-transfer",
+    "name": "Move directory",
+    "dynamic": false,
+    "action": "move",
+    "source": "./test/data/directory-transfer-move/source",
+    "sourceType": "str",
+    "destination": "./test/data/directory-transfer-move/archive/moved",
+    "destinationType": "str",
+    "recursive": true,
+    "x": 700,
+    "y": 980,
+    "wires": [
+      [
+        "dt2004"
+      ]
+    ]
+  },
+  {
+    "id": "dt2004",
+    "type": "debug",
+    "name": "Transfer result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "file",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 930,
+    "y": 980,
+    "wires": []
+  }
+]

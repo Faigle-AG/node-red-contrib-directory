@@ -1,0 +1,109 @@
+[
+  {
+    "id": "da2001",
+    "type": "inject",
+    "name": "Dynamic create",
+    "props": [
+      {
+        "p": "file",
+        "v": "{\"action\":\"create\",\"path\":\"./test/data/directory-action-dynamic/nested\",\"recursive\":true}",
+        "vt": "json"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 280,
+    "y": 680,
+    "wires": [
+      [
+        "da2004"
+      ]
+    ]
+  },
+  {
+    "id": "da2002",
+    "type": "inject",
+    "name": "Dynamic list",
+    "props": [
+      {
+        "p": "file",
+        "v": "{\"action\":\"list\",\"path\":\"./test/data/directory-action-dynamic\"}",
+        "vt": "json"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 270,
+    "y": 740,
+    "wires": [
+      [
+        "da2004"
+      ]
+    ]
+  },
+  {
+    "id": "da2003",
+    "type": "inject",
+    "name": "Dynamic delete",
+    "props": [
+      {
+        "p": "file",
+        "v": "{\"action\":\"delete\",\"path\":\"./test/data/directory-action-dynamic\",\"recursive\":true}",
+        "vt": "json"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 280,
+    "y": 800,
+    "wires": [
+      [
+        "da2004"
+      ]
+    ]
+  },
+  {
+    "id": "da2004",
+    "type": "directory-action",
+    "name": "Dynamic directory action",
+    "dynamic": true,
+    "action": "list",
+    "source": "",
+    "sourceType": "str",
+    "property": "file",
+    "propertyType": "msg",
+    "recursive": false,
+    "x": 530,
+    "y": 740,
+    "wires": [
+      [
+        "da2005"
+      ]
+    ]
+  },
+  {
+    "id": "da2005",
+    "type": "debug",
+    "name": "Result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 750,
+    "y": 740,
+    "wires": []
+  }
+]
