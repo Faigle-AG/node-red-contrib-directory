@@ -260,10 +260,10 @@ A node that watches a directory to detect added, changed, and deleted files or d
     The root directory configured for watching.
 
   - **msg.file.path** _string_ \
-    The complete, normalized "absolute" path to the item.
+    The normalized path to the item, absolute or relative as given.
 
   - **msg.file.dir** _string_ \
-    The "absolute" path to the parent directory containing the item.
+    The parent directory part of the normalized path.
 
   - **msg.file.base** _string_ \
     The name of the file or directory _with_ the extension.
@@ -279,7 +279,7 @@ A node that watches a directory to detect added, changed, and deleted files or d
 
 ### Errors
 
-The node has no input, so errors reach Catch nodes without a triggering message.
+The node has no input; errors are reported via `node.error` without a triggering message.
 
 - An invalid ignore pattern is reported once at deploy (status `Error : …`) and the node does not watch.
 - Watcher errors are reported the same way.

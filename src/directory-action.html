@@ -202,7 +202,7 @@ A node to create, delete, or list the contents of directories on the file system
   The operation to perform: Create, Delete, or List Contents.
 
 - **Source Path** _string | msg | flow | global | env | JSONata_ \
-  The absolute path to the directory you want to operate on.
+  Path of the directory to operate on, absolute or relative to the Node-RED working directory.
 
 - **Recursive** _boolean_ \
   Controls recursive behavior for Create and Delete.
@@ -260,7 +260,7 @@ A node to create, delete, or list the contents of directories on the file system
 
 ### Errors
 
-Failures go to Catch nodes as `msg.error`, with `msg.error.code`; nothing is sent on the output.
+Failures go to Catch nodes as `msg.error`, with `msg.error.code` when available; nothing is sent on the output.
 
 - `DIRECTORY_PATH_MISSING`, `ACTION_MISSING`, `INVALID_ACTION`: incomplete or invalid request. The status shows the message.
 - Native filesystem codes, for example `ENOENT` when listing a missing directory, or `ENOTEMPTY` when deleting a non-empty directory without **Recursive**.

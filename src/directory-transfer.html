@@ -244,7 +244,7 @@ A node to move, rename, or copy directories on the file system.
 
 ### Errors
 
-Failures go to Catch nodes as `msg.error`, with `msg.error.code`; nothing is sent on the output.
+Failures go to Catch nodes as `msg.error`, with `msg.error.code` when available; nothing is sent on the output.
 
 - `ACTION_MISSING`, `SOURCE_PATH_MISSING`, `DESTINATION_PATH_MISSING`, `INVALID_ACTION`: incomplete or invalid request, checked before parent folders are created. The status shows the message.
 - Native filesystem codes, for example `ENOENT` for a missing source, `ERR_FS_EISDIR` when copying without recursive mode, or `ERR_FS_CP_EINVAL` when copying a directory into itself.
