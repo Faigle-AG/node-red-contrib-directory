@@ -3,6 +3,15 @@ module.exports = function (RED) {
     const path = require('path');
     const { extendNode } = require('@faigle/node-red-runtime-utils')(RED);
 
+    // Codes added to previously uncoded errors keep their message as status text,
+    // so Status-node consumers see the same text as before.
+    function createError(message, code) {
+        const err = new Error(message);
+        err.code = code;
+        Object.defineProperty(err, 'statusText', { value: message });
+        return err;
+    }
+
     function DirectoryTransferNode(config) {
         RED.nodes.createNode(this, config);
 
@@ -28,9 +37,10 @@ module.exports = function (RED) {
                     : await node.getTypedProperty(node.destination, node.destinationType, msg);
                 const recursive = node.dynamic ? msg.file && msg.file.recursive : node.recursive;
 
-                if (!currentAction) throw new Error('Action is missing');
-                if (!srcRaw) throw new Error('Source path is missing');
-                if (!destRaw) throw new Error('Destination path is missing');
+                if (!currentAction) throw createError('Action is missing', 'ACTION_MISSING');
+                if (!srcRaw) throw createError('Source path is missing', 'SOURCE_PATH_MISSING');
+                if (!destRaw)
+                    throw createError('Destination path is missing', 'DESTINATION_PATH_MISSING');
 
                 const srcPath = path.normalize(srcRaw);
                 const dstPath = path.normalize(destRaw);
@@ -39,6 +49,10 @@ module.exports = function (RED) {
                     node.log('Source and Destination path are the same');
                     finishAction('Ignored', srcPath, dstPath);
                     return;
+                }
+
+                if (currentAction !== 'copy' && currentAction !== 'move') {
+                    throw createError(`Unknown action type: ${currentAction}`, 'INVALID_ACTION');
                 }
 
                 if (recursive) fs.mkdirSync(path.dirname(dstPath), { recursive: true });
@@ -81,9 +95,6 @@ module.exports = function (RED) {
                         msg.file = { ...msg.file, ...file };
                         finishAction(`Moved ${path.basename(srcPath)}`, srcPath, dstPath);
                         break;
-
-                    default:
-                        throw new Error(`Unknown action type: ${currentAction}`);
                 }
 
                 function finishAction(statusText) {
@@ -92,7 +103,9 @@ module.exports = function (RED) {
                     if (done) done();
                 }
             } catch (err) {
-                node.status.failed(err.code || err.message || 'Configuration error');
+                node.status.failed(
+                    err.statusText || err.code || err.message || 'Configuration error',
+                );
                 if (done) done(err);
                 else node.error(err, msg);
             }

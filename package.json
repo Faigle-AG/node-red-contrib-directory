@@ -1,12 +1,18 @@
 {
   "name": "@faigle/node-red-contrib-directory",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "directories also diserve some attetion",
   "keywords": [
     "node-red"
   ],
   "private": false,
   "license": "MIT",
+  "files": [
+    "src",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
   "node-red": {
     "nodes": {
       "dir-action": "src/directory-action.js",
@@ -31,7 +37,8 @@
     "prettier": "^3.9.4"
   },
   "dependencies": {
-    "@faigle/node-red-runtime-utils": "^0.6.4"
+    "@faigle/node-red-runtime-utils": "^0.6.4",
+    "chokidar": "^4.0.3"
   },
   "scripts": {
     "prepare": "npx --yes husky",

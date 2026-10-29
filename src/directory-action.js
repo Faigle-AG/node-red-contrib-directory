@@ -3,6 +3,15 @@ module.exports = function (RED) {
     const path = require('path');
     const { extendNode } = require('@faigle/node-red-runtime-utils')(RED);
 
+    // Codes added to previously uncoded errors keep their message as status text,
+    // so Status-node consumers see the same text as before.
+    function createError(message, code) {
+        const err = new Error(message);
+        err.code = code;
+        Object.defineProperty(err, 'statusText', { value: message });
+        return err;
+    }
+
     function DirectoryActionNode(config) {
         RED.nodes.createNode(this, config);
 
@@ -25,8 +34,9 @@ module.exports = function (RED) {
                     : await node.getTypedProperty(node.source, node.sourceType, msg);
                 const recursive = node.dynamic ? msg.file && msg.file.recursive : node.recursive;
 
-                if (!sourceRaw) throw new Error('Source directory path is missing');
-                if (!currentAction) throw new Error('Action is missing');
+                if (!sourceRaw)
+                    throw createError('Source directory path is missing', 'DIRECTORY_PATH_MISSING');
+                if (!currentAction) throw createError('Action is missing', 'ACTION_MISSING');
 
                 const targetPath = path.normalize(sourceRaw);
                 const parsed = path.parse(targetPath);
@@ -55,10 +65,13 @@ module.exports = function (RED) {
                         break;
 
                     case 'delete':
-                        fs.rmSync(targetPath, {
-                            recursive: recursive,
-                            force: true,
-                        });
+                        try {
+                            fs.rmSync(targetPath, { recursive: recursive, force: true });
+                        } catch (err) {
+                            // rmSync cannot remove a directory without recursion; remove it if empty.
+                            if (recursive || err.code !== 'ERR_FS_EISDIR') throw err;
+                            fs.rmdirSync(targetPath);
+                        }
                         msg.file = { ...msg.file, ...file };
                         await setOutputData(true);
                         finishAction(`Deleted ${file.base}`);
@@ -74,7 +87,7 @@ module.exports = function (RED) {
                     }
 
                     default:
-                        throw new Error(`Unknown action: ${currentAction}`);
+                        throw createError(`Unknown action: ${currentAction}`, 'INVALID_ACTION');
                 }
 
                 function finishAction(statusText) {
@@ -83,7 +96,9 @@ module.exports = function (RED) {
                     if (done) done();
                 }
             } catch (err) {
-                node.status.failed(err.code || err.message || 'Configuration error');
+                node.status.failed(
+                    err.statusText || err.code || err.message || 'Configuration error',
+                );
                 if (done) done(err);
                 else node.error(err, msg);
             }
