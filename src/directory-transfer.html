@@ -180,19 +180,19 @@ A node to move, rename, or copy directories on the file system.
 ### Properties
 
 - **Load from msg.file** _boolean_ \
-  If enabled, the node will ignore the UI properties and expect `msg.file.action`, `msg.file.source`, and `msg.file.destination` to be provided dynamically.
+  If enabled, the node will ignore the UI properties and expect `msg.file.action`, `msg.file.source`, `msg.file.destination` and optional `msg.file.recursive` to be provided dynamically.
 
 - **Action** _radio buttons_ \
   The operation to perform: Move / Rename or Copy.
 
 - **Source Path** _string | msg | flow | global | env | JSONata_ \
-  The absolute path to the directory you want to transfer.
+  Path of the directory to transfer, absolute or relative to the Node-RED working directory.
 
 - **Destination Path** _string | msg | flow | global | env | JSONata_ \
-  The absolute path for the new location.
+  Path of the new location, absolute or relative.
 
 - **Create parent folder** _boolean_ \
-  If enabled, missing parent directories in the destination path will be created automatically.
+  Recursive mode: creates missing parent directories of the destination and copies directory trees. Without it, copying a directory fails.
 
 ---
 
@@ -205,10 +205,13 @@ A node to move, rename, or copy directories on the file system.
     The action to execute if triggered dynamically (`move` or `copy`).
 
   - **msg.file.source** _string_ \
-    The original absolute path to the directory.
+    The path of the directory to transfer.
 
   - **msg.file.destination** _string_ \
-    The destination absolute path for the directory.
+    The destination path for the directory.
+
+  - **msg.file.recursive** _boolean_ \
+    Recursive mode for dynamic requests; omitted means off.
 
 ### Outputs
 
@@ -222,21 +225,34 @@ A node to move, rename, or copy directories on the file system.
     The action performed (`move` or `copy`).
 
   - **msg.file.source** _string_ \
-    The normalized absolute path of the original directory.
+    The normalized path of the original directory.
 
   - **msg.file.destination** _string_ \
-    The normalized absolute path of the destination.
+    The normalized path of the destination.
 
   - **msg.file.path** _string_ \
-    The normalized absolute path to the resulting directory (destination).
+    The normalized path of the resulting directory (destination).
 
   - **msg.file.dir** _string_ \
-    The "absolute" path to the parent directory of the resulting location.
+    The parent directory of the resulting location.
 
   - **msg.file.base** _string_ \
     The name of the resulting directory.
 
   - **msg.file.name** _string_ \
     The name of the resulting directory.
+
+### Errors
+
+Failures go to Catch nodes as `msg.error`, with `msg.error.code`; nothing is sent on the output.
+
+- `ACTION_MISSING`, `SOURCE_PATH_MISSING`, `DESTINATION_PATH_MISSING`, `INVALID_ACTION`: incomplete or invalid request, checked before parent folders are created. The status shows the message.
+- Native filesystem codes, for example `ENOENT` for a missing source, `ERR_FS_EISDIR` when copying without recursive mode, or `ERR_FS_CP_EINVAL` when copying a directory into itself.
+
+When source and destination are the same, the message passes through unchanged.
+
+### Example
+
+With **Load from msg.file** enabled: `msg.file = { action: 'copy', source: '/data/in', destination: '/data/backup/in', recursive: true }`.
 </script>
 <!-- @formatter:on -->

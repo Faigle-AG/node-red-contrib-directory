@@ -257,5 +257,18 @@ A node to create, delete, or list the contents of directories on the file system
 
   - **contents** _array_ \
     Present for **List Contents** and contains the filenames and directory names inside the target directory.
+
+### Errors
+
+Failures go to Catch nodes as `msg.error`, with `msg.error.code`; nothing is sent on the output.
+
+- `DIRECTORY_PATH_MISSING`, `ACTION_MISSING`, `INVALID_ACTION`: incomplete or invalid request. The status shows the message.
+- Native filesystem codes, for example `ENOENT` when listing a missing directory, or `ENOTEMPTY` when deleting a non-empty directory without **Recursive**.
+
+Deleting a path that does not exist succeeds.
+
+### Example
+
+With **Load from msg.file** enabled: `msg.file = { action: 'list', path: '/data/archive' }`. The result object, whose `contents` is an array of names, is written to **Output To**.
 </script>
 <!-- @formatter:on -->

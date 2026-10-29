@@ -276,5 +276,12 @@ A node that watches a directory to detect added, changed, and deleted files or d
 
   - **msg.file.stats** _object_ \
     The Node.js `fs.Stats` object for the file (will be `null` if unavailable).
+
+### Errors
+
+The node has no input, so errors reach Catch nodes without a triggering message.
+
+- An invalid ignore pattern is reported once at deploy (status `Error : …`) and the node does not watch.
+- Watcher errors are reported the same way.
 </script>
 <!-- @formatter:on -->
