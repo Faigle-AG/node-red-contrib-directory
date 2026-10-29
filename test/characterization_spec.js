@@ -6,7 +6,7 @@ const directoryActionNode = require('../src/directory-action.js');
 const directoryTransferNode = require('../src/directory-transfer.js');
 const directoryWatchNode = require('../src/directory-watch.js');
 const catchNode = require('@node-red/nodes/core/common/25-catch.js');
-const { trigger, lastStatusText } = require('./helpers/harness');
+const { trigger, lastStatusText, collect } = require('./helpers/harness');
 
 helper.init(require.resolve('node-red'));
 
@@ -102,17 +102,47 @@ describe('directory nodes characterization', function () {
             assert.equal(lastStatusText(result), 'Deleted nope');
         });
 
-        it('legacy: a non-recursive delete fails with ERR_FS_EISDIR even for an empty directory', async function () {
+        it('non-recursive delete removes an empty directory', async function () {
             await load('directory-action', {
                 action: 'delete',
                 source: work('empty'),
+                recursive: false,
+                property: 'payload',
+            });
+
+            const result = await trigger(helper, 'n1', 'out', {}, { settleMs: 50 });
+
+            assert.equal(result.msg.payload, true);
+            assert.equal(fs.existsSync(work('empty')), false);
+            assert.equal(lastStatusText(result), 'Deleted empty');
+            assert.deepEqual(result.extra, { outputs: 0, errors: 0 });
+        });
+
+        it('non-recursive delete of a non-empty directory fails with ENOTEMPTY', async function () {
+            await load('directory-action', {
+                action: 'delete',
+                source: work('src'),
                 recursive: false,
             });
 
             const result = await trigger(helper, 'n1', 'out', {});
 
-            assert.equal(result.err.code, 'ERR_FS_EISDIR');
-            assert.equal(fs.existsSync(work('empty')), true);
+            assert.equal(result.err.code, 'ENOTEMPTY');
+            assert.equal(lastStatusText(result), 'ENOTEMPTY');
+            assert.equal(fs.existsSync(work('src', 'a.txt')), true);
+        });
+
+        it('legacy: non-recursive delete still removes a plain file', async function () {
+            await load('directory-action', {
+                action: 'delete',
+                source: work('src', 'a.txt'),
+                recursive: false,
+            });
+
+            const result = await trigger(helper, 'n1', 'out', {});
+
+            assert.ok(result.msg);
+            assert.equal(fs.existsSync(work('src', 'a.txt')), false);
         });
 
         it('legacy: dynamic recursive defaults to off, so nested create fails with ENOENT', async function () {
@@ -125,18 +155,26 @@ describe('directory nodes characterization', function () {
             assert.equal(result.err.code, 'ENOENT');
         });
 
-        it('legacy: validation errors carry no code and show the message as status', async function () {
+        it('validation errors carry codes but keep the message as status text', async function () {
             await load('directory-action', { dynamic: true });
 
             const cases = [
-                [{ file: { action: 'list' } }, 'Source directory path is missing'],
-                [{ file: { path: work('src') } }, 'Action is missing'],
-                [{ file: { action: 'rename', path: work('src') } }, 'Unknown action: rename'],
+                [
+                    { file: { action: 'list' } },
+                    'Source directory path is missing',
+                    'DIRECTORY_PATH_MISSING',
+                ],
+                [{ file: { path: work('src') } }, 'Action is missing', 'ACTION_MISSING'],
+                [
+                    { file: { action: 'rename', path: work('src') } },
+                    'Unknown action: rename',
+                    'INVALID_ACTION',
+                ],
             ];
-            for (const [input, message] of cases) {
+            for (const [input, message, code] of cases) {
                 const result = await trigger(helper, 'n1', 'out', input);
                 assert.equal(result.err.message, message);
-                assert.equal(result.err.code, undefined);
+                assert.equal(result.err.code, code);
                 assert.equal(lastStatusText(result), message);
             }
         });
@@ -170,18 +208,20 @@ describe('directory nodes characterization', function () {
             assert.equal(lastStatusText(result), 'Ignored');
         });
 
-        it('legacy: an unknown action creates the destination parent before failing', async function () {
+        it('rejects an unknown action before creating the destination parent', async function () {
             await load('directory-transfer', {
                 action: 'delete',
                 source: work('src'),
                 destination: work('newparent', 'dst'),
             });
 
-            const result = await trigger(helper, 'n1', 'out', {});
+            const result = await trigger(helper, 'n1', 'out', {}, { settleMs: 50 });
 
             assert.equal(result.err.message, 'Unknown action type: delete');
-            assert.equal(result.err.code, undefined);
-            assert.equal(fs.existsSync(work('newparent')), true);
+            assert.equal(result.err.code, 'INVALID_ACTION');
+            assert.equal(lastStatusText(result), 'Unknown action type: delete');
+            assert.equal(fs.existsSync(work('newparent')), false);
+            assert.deepEqual(result.extra, { outputs: 0, errors: 0 });
         });
 
         it('fails a non-recursive directory copy with ERR_FS_EISDIR', async function () {
@@ -250,21 +290,33 @@ describe('directory nodes characterization', function () {
             await load('directory-transfer', { dynamic: true });
 
             const cases = [
-                [{ file: { source: 'a', destination: 'b' } }, 'Action is missing'],
-                [{ file: { action: 'copy', destination: 'b' } }, 'Source path is missing'],
-                [{ file: { action: 'copy', source: 'a' } }, 'Destination path is missing'],
+                [
+                    { file: { source: 'a', destination: 'b' } },
+                    'Action is missing',
+                    'ACTION_MISSING',
+                ],
+                [
+                    { file: { action: 'copy', destination: 'b' } },
+                    'Source path is missing',
+                    'SOURCE_PATH_MISSING',
+                ],
+                [
+                    { file: { action: 'copy', source: 'a' } },
+                    'Destination path is missing',
+                    'DESTINATION_PATH_MISSING',
+                ],
             ];
-            for (const [input, message] of cases) {
+            for (const [input, message, code] of cases) {
                 const result = await trigger(helper, 'n1', 'out', input);
                 assert.equal(result.err.message, message);
-                assert.equal(result.err.code, undefined);
+                assert.equal(result.err.code, code);
                 assert.equal(lastStatusText(result), message);
             }
         });
     });
 
     describe('directory-watch', function () {
-        it('legacy: an invalid ignoredFiles regex fails node construction', async function () {
+        it('reports an invalid ignoredFiles regex through node.error without watching', async function () {
             await load('directory-watch', {
                 source: work('src'),
                 ignoredFiles: '(',
@@ -272,12 +324,17 @@ describe('directory nodes characterization', function () {
                 watchAdd: true,
             });
 
-            assert.equal(helper.getNode('n1'), null);
+            const node = helper.getNode('n1');
+            assert.ok(node, 'the node is still created');
             const errors = helper
                 .log()
                 .args.map((args) => args[0])
-                .filter((entry) => entry.level === helper.log().ERROR);
-            assert.ok(errors.some((entry) => /Invalid regular expression/.test(String(entry.msg))));
+                .filter((entry) => entry.id === 'n1' && entry.level === helper.log().ERROR);
+            assert.equal(errors.length, 1);
+            assert.ok(errors[0].msg instanceof SyntaxError);
+
+            const events = await collect(helper, 'out', 300);
+            assert.deepEqual(events, [], 'no watcher emits the existing file');
         });
     });
 });

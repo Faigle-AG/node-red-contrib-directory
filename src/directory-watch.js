@@ -35,7 +35,14 @@ module.exports = function (RED) {
                 };
             }
 
-            const ignoreRegex = node.ignoredFiles ? new RegExp(node.ignoredFiles) : null;
+            let ignoreRegex = null;
+            try {
+                if (node.ignoredFiles) ignoreRegex = new RegExp(node.ignoredFiles);
+            } catch (err) {
+                node.status.failed('Error : ' + err.message);
+                node.error(err);
+                return;
+            }
             const normalizedTarget = node.source;
 
             const watcher = chokidar.watch(node.source, {

@@ -215,7 +215,7 @@ msg.file = {
 return msg;
 ```
 
-Input-driven paths support `msg`, `flow`, `global`, `str`, `jsonata`, and `env`. Configured outputs support `msg`, `flow`, and `global`. Watch sources omit `msg` because they are evaluated at startup without an input message. Ignored-file patterns are regular expressions matched against the basename. In the current local watcher, an invalid pattern fails node construction during deployment; it is not a normal input/Catch failure. Validate the pattern before deploying.
+Input-driven paths support `msg`, `flow`, `global`, `str`, `jsonata`, and `env`. Configured outputs support `msg`, `flow`, and `global`. Watch sources omit `msg` because they are evaluated at startup without an input message. Ignored-file patterns are regular expressions matched against the basename. An invalid pattern reports a SyntaxError once through `node.error` with failed status. The node is created, but no watcher starts; correct the pattern and redeploy.
 
 ### Outputs and compatibility
 
@@ -241,22 +241,26 @@ msg.payload = {
 };
 ```
 
+For compatibility, directory-transfer's same-path no-op precedes action validation. directory-action deletion also removes a plain file if the path points to one; it is not a directory-only safety boundary.
+
 Shallow metadata merges preserve custom fields and may retain earlier results. Do not infer that every retained field was recomputed. Watch events are best-effort notifications, not a durable event log; they do not promise every intermediate write or the same timing as Azure polling.
 
 ### Errors and operational boundaries
 
-Input errors use Node-RED's error/Catch mechanism and do not produce normal success output. Watch errors have no triggering input message. Native filesystem errors retain their codes; some legacy validation errors are uncoded. Existing status text is a separate Status-node output contract.
+Input errors use Node-RED's error/Catch mechanism and do not produce normal success output. Watch errors have no triggering input message. Native filesystem errors retain their codes; missing paths/actions and unsupported actions have explicit validation codes, while other evaluation errors may remain uncoded. Newly coded validation errors keep their previous status text. Existing status text is a separate Status-node output contract.
 
-| Condition                                                          | Current result                                                                                                                                                 |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Missing/invalid path, missing action or unsupported action         | Error; legacy validation errors may be uncoded; directory-transfer can create destination parents before rejecting an unknown action when recursive is enabled |
-| List of a missing directory                                        | Native error, normally `ENOENT`                                                                                                                                |
-| Create nested path without required parents and recursive disabled | Native filesystem error                                                                                                                                        |
-| Delete missing path                                                | Normally succeeds because removal uses `force: true`                                                                                                           |
-| Delete any existing directory with recursive disabled              | Current implementation fails with `ERR_FS_EISDIR`, even for an empty directory                                                                                 |
-| Copy directory without recursive enabled                           | Native filesystem error                                                                                                                                        |
-| Permission failure                                                 | Native error such as `EACCES` or `EPERM`                                                                                                                       |
-| Configured output/context write fails                              | Error; create/delete may already have completed                                                                                                                |
+| Condition                                                          | Current result                                                                                                                                                                                                             |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Missing/invalid path, missing action or unsupported action         | `DIRECTORY_PATH_MISSING`, `SOURCE_PATH_MISSING`, `DESTINATION_PATH_MISSING`, `ACTION_MISSING` or `INVALID_ACTION`, as applicable; unknown transfer actions error before parent creation, except the legacy same-path no-op |
+| List of a missing directory                                        | Native error, normally `ENOENT`                                                                                                                                                                                            |
+| Create nested path without required parents and recursive disabled | Native filesystem error                                                                                                                                                                                                    |
+| Delete missing path                                                | Normally succeeds because removal uses `force: true`                                                                                                                                                                       |
+| Delete an empty directory with recursive disabled                  | Success; the directory is removed                                                                                                                                                                                          |
+| Delete a nonempty directory with recursive disabled                | Native not-empty error, normally `ENOTEMPTY`; descendants are not removed                                                                                                                                                  |
+| Invalid watcher ignore pattern                                     | One SyntaxError reported at startup; no watcher starts                                                                                                                                                                     |
+| Copy directory without recursive enabled                           | Native filesystem error                                                                                                                                                                                                    |
+| Permission failure                                                 | Native error such as `EACCES` or `EPERM`                                                                                                                                                                                   |
+| Configured output/context write fails                              | Error; create/delete may already have completed                                                                                                                                                                            |
 
 Paths use host filesystem rules, including absolute/relative paths and dot segments. They are **not sandboxed**; recursive deletion is destructive within the runtime account's permissions. Validate untrusted inputs, restrict permissions and account for links when designing access restrictions. Path normalization alone does not enforce a containment boundary.
 
