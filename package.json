@@ -1,6 +1,6 @@
 {
   "name": "@faigle/node-red-contrib-directory",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "directories also diserve some attetion",
   "keywords": [
     "node-red"
@@ -37,7 +37,8 @@
     "prepare": "npx --yes husky",
     "test": "mocha \"test/**/*_spec.js\"",
     "format": "prettier --write \"**/*.{js,html,md}\"",
-    "lint": "eslint \"**/*.{js,html}\""
+    "lint": "eslint \"**/*.{js,html}\"",
+    "format:check": "prettier --check \"**/*.{js,html,md}\""
   },
   "lint-staged": {
     "*.{js,html,md}": "prettier --write",
