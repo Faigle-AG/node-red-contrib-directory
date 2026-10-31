@@ -266,6 +266,14 @@ Paths use host filesystem rules, including absolute/relative paths and dot segme
 
 Directory copies/deletes and cross-device moves can partially complete. Move can fall back to recursive copy followed by source deletion. Failures do not roll back the destination or restore deleted entries. Avoid concurrent mutations of the same tree and inspect partial results before retrying.
 
+### Shutdown
+
+If directory-action or directory-transfer closes while resolving configured paths, it starts no filesystem operation after those reads settle. In-flight input continuations then finish quietly, without a new output message, status update or error report. Directory-action also suppresses late output-write results and errors. Pending property/context operations are not cancelled; an already-started output write may still change its target.
+
+Directory mutations use synchronous filesystem calls. A sequence already running cannot be interrupted by a later close event, and its effects are not rolled back. This includes directory-transfer's copy/delete fallback for a cross-device move; it is distinct from the asynchronous local file-transfer fallback.
+
+Directory-watch waits for Chokidar's close promise to settle; if it rejects, the node warns and completes close. Event output writes already in progress are not cancelled, but their late results or errors produce no further event output or status. Late file/error callbacks are ignored defensively; Chokidar's normal close path already removes its listeners. This does not promise durable delivery of events pending at shutdown.
+
 ## Status Indicators
 
 The nodes display runtime status in the Node-RED editor:

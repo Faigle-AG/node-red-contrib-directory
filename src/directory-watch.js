@@ -58,6 +58,10 @@ module.exports = function (RED) {
                 atomic: true,
             });
 
+            // Set on close. chokidar stops emitting once closed; these checks cover output writes
+            // still in flight at close, and a watcher that emits late.
+            let stopped = false;
+
             function createMsg(filename, stats, eventType, fileType) {
                 node.status.succeeded(`${eventType} ${fileType} ${path.basename(filename)}`, {
                     next: () => node.status.waiting('Listening...'),
@@ -78,13 +82,16 @@ module.exports = function (RED) {
             }
 
             async function sendEvent(filename, stats, eventType, fileType) {
+                if (stopped) return;
                 try {
                     const msg = {};
                     const file = createMsg(filename, stats, eventType, fileType);
 
                     await node.setTypedProperty(node.target, node.targetType, msg, file);
+                    if (stopped) return;
                     node.send(msg);
                 } catch (err) {
+                    if (stopped) return;
                     node.status.failed('Error : ' + err.message);
                     node.error(err);
                 }
@@ -114,11 +121,21 @@ module.exports = function (RED) {
             watcher.on('ready', () => node.status.waiting('Listening...'));
 
             watcher.on('error', (err) => {
+                if (stopped) return;
                 node.status.failed('Error : ' + err.message);
                 node.error(err);
             });
 
-            node.on('close', () => watcher.close());
+            node.on('close', function (removed, done) {
+                stopped = true;
+                watcher.close().then(
+                    () => done(),
+                    (err) => {
+                        node.warn(`Could not close the directory watcher: ${err.message}`);
+                        done();
+                    },
+                );
+            });
         };
 
         this.startListening();

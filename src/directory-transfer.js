@@ -26,7 +26,17 @@ module.exports = function (RED) {
         var node = this;
         extendNode(node);
 
+        // After close, input still in progress starts no new filesystem operation and completes
+        // without status, output or error.
+        let closing = false;
+        node.on('close', function () {
+            closing = true;
+        });
+
         node.on('input', async function (msg, send, done) {
+            const finishClosed = () => {
+                if (done) done();
+            };
             try {
                 const currentAction = node.dynamic ? msg.file && msg.file.action : node.action;
                 const srcRaw = node.dynamic
@@ -36,6 +46,9 @@ module.exports = function (RED) {
                     ? msg.file && msg.file.destination
                     : await node.getTypedProperty(node.destination, node.destinationType, msg);
                 const recursive = node.dynamic ? msg.file && msg.file.recursive : node.recursive;
+
+                // The node may have closed while the paths were read.
+                if (closing) return finishClosed();
 
                 if (!currentAction) throw createError('Action is missing', 'ACTION_MISSING');
                 if (!srcRaw) throw createError('Source path is missing', 'SOURCE_PATH_MISSING');
@@ -103,6 +116,7 @@ module.exports = function (RED) {
                     if (done) done();
                 }
             } catch (err) {
+                if (closing) return finishClosed();
                 node.status.failed(
                     err.statusText || err.code || err.message || 'Configuration error',
                 );
