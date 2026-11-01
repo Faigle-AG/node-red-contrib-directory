@@ -1,17 +1,29 @@
+// The types each typed field offers in the editor (Phase 2.9). A configured type outside these
+// fails clearly at start-up instead of being evaluated.
+const TYPES = {
+    source: ['flow', 'global', 'str', 'jsonata', 'env'],
+    target: ['msg', 'flow', 'global'],
+    ignoredFiles: ['re'],
+};
+
 module.exports = function (RED) {
     const chokidar = require('chokidar');
     const path = require('path');
     const { extendNode } = require('@faigle/node-red-runtime-utils')(RED);
 
+    function createError(message, code) {
+        const err = new Error(message);
+        err.code = code;
+        return err;
+    }
+
     function DirectoryWatchNode(config) {
         RED.nodes.createNode(this, config);
 
         this.sourceType = config.sourceType || 'str';
-        this.source = path.normalize(
-            RED.util.evaluateNodeProperty(config.source, this.sourceType, this),
-        );
         this.target = config.target || 'file';
         this.targetType = config.targetType || 'msg';
+        this.ignoredFilesType = config.ignoredFilesType || 're';
         this.depth = parseInt(config.depth) || 0;
         this.awaitWriteFinish = config.awaitWriteFinish;
         this.stabilityThreshold = parseInt(config.stabilityThreshold) || 2000;
@@ -23,10 +35,32 @@ module.exports = function (RED) {
         this.filterFiles = config.filterFiles;
         this.filterDirs = config.filterDirs;
 
-        this.startListening = () => {
-            var node = this;
-            extendNode(node);
+        var node = this;
+        extendNode(node);
 
+        // Registered before the source is evaluated, so a close while an asynchronous evaluation is
+        // pending starts no watcher. chokidar stops emitting once closed; `stopped` also covers
+        // output writes still in flight at close, and a watcher that emits late.
+        let stopped = false;
+        let watcher = null;
+        node.on('close', function (removed, done) {
+            stopped = true;
+            if (!watcher) return done();
+            watcher.close().then(
+                () => done(),
+                (err) => {
+                    node.warn(`Could not close the directory watcher: ${err.message}`);
+                    done();
+                },
+            );
+        });
+
+        function fail(err) {
+            node.status.failed('Error : ' + err.message);
+            node.error(err);
+        }
+
+        this.startListening = () => {
             var awaitWriteConfig = false;
             if (node.awaitWriteFinish) {
                 awaitWriteConfig = {
@@ -45,7 +79,7 @@ module.exports = function (RED) {
             }
             const normalizedTarget = node.source;
 
-            const watcher = chokidar.watch(node.source, {
+            watcher = chokidar.watch(node.source, {
                 ignored: (filename) => ignoreRegex?.test(path.basename(filename)),
                 persistent: true,
                 depth: node.depth,
@@ -57,10 +91,6 @@ module.exports = function (RED) {
                 binaryInterval: 1000,
                 atomic: true,
             });
-
-            // Set on close. chokidar stops emitting once closed; these checks cover output writes
-            // still in flight at close, and a watcher that emits late.
-            let stopped = false;
 
             function createMsg(filename, stats, eventType, fileType) {
                 node.status.succeeded(`${eventType} ${fileType} ${path.basename(filename)}`, {
@@ -125,21 +155,55 @@ module.exports = function (RED) {
                 node.status.failed('Error : ' + err.message);
                 node.error(err);
             });
-
-            node.on('close', function (removed, done) {
-                stopped = true;
-                watcher.close().then(
-                    () => done(),
-                    (err) => {
-                        node.warn(`Could not close the directory watcher: ${err.message}`);
-                        done();
-                    },
-                );
-            });
         };
 
-        this.startListening();
+        // Unsupported types fail before anything is evaluated or watched.
+        if (!TYPES.source.includes(node.sourceType)) {
+            fail(
+                createError(
+                    `Source type '${node.sourceType}' is not supported`,
+                    'INVALID_CONFIGURATION',
+                ),
+            );
+            return;
+        }
+        if (!TYPES.target.includes(node.targetType)) {
+            fail(new Error(`Unsupported target property type: ${node.targetType}`));
+            return;
+        }
+        // A blank pattern is never used, so its type is not checked.
+        if (node.ignoredFiles && !TYPES.ignoredFiles.includes(node.ignoredFilesType)) {
+            fail(
+                createError(
+                    `Ignored files type '${node.ignoredFilesType}' is not supported`,
+                    'INVALID_CONFIGURATION',
+                ),
+            );
+            return;
+        }
+
+        // The callback form also evaluates JSONata and asynchronous context stores. It passes no
+        // message, as before, and normalizes the raw result unchanged: a blank source still means
+        // '.', and a non-string fails here rather than being treated as a path. A failure to start
+        // the watcher is reported here too, since an asynchronous callback has no caller to catch it.
+        const started = (err, value) => {
+            if (stopped) return;
+            if (err) return fail(err);
+            try {
+                node.source = path.normalize(value);
+                node.startListening();
+            } catch (startErr) {
+                fail(startErr);
+            }
+        };
+        try {
+            RED.util.evaluateNodeProperty(config.source, node.sourceType, node, undefined, started);
+        } catch (err) {
+            started(err);
+        }
     }
 
     RED.nodes.registerType('directory-watch', DirectoryWatchNode);
 };
+
+module.exports.TYPES = TYPES;
