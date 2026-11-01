@@ -1,109 +1,131 @@
 [
-  {
-    "id": "da2001",
-    "type": "inject",
-    "name": "Dynamic create",
-    "props": [
-      {
-        "p": "file",
-        "v": "{\"action\":\"create\",\"path\":\"./test/data/directory-action-dynamic/nested\",\"recursive\":true}",
-        "vt": "json"
-      }
-    ],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 280,
-    "y": 680,
-    "wires": [
-      [
-        "da2004"
-      ]
-    ]
-  },
-  {
-    "id": "da2002",
-    "type": "inject",
-    "name": "Dynamic list",
-    "props": [
-      {
-        "p": "file",
-        "v": "{\"action\":\"list\",\"path\":\"./test/data/directory-action-dynamic\"}",
-        "vt": "json"
-      }
-    ],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 270,
-    "y": 740,
-    "wires": [
-      [
-        "da2004"
-      ]
-    ]
-  },
-  {
-    "id": "da2003",
-    "type": "inject",
-    "name": "Dynamic delete",
-    "props": [
-      {
-        "p": "file",
-        "v": "{\"action\":\"delete\",\"path\":\"./test/data/directory-action-dynamic\",\"recursive\":true}",
-        "vt": "json"
-      }
-    ],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 280,
-    "y": 800,
-    "wires": [
-      [
-        "da2004"
-      ]
-    ]
-  },
-  {
-    "id": "da2004",
-    "type": "directory-action",
-    "name": "Dynamic directory action",
-    "dynamic": true,
-    "action": "list",
-    "source": "",
-    "sourceType": "str",
-    "property": "file",
-    "propertyType": "msg",
-    "recursive": false,
-    "x": 530,
-    "y": 740,
-    "wires": [
-      [
-        "da2005"
-      ]
-    ]
-  },
-  {
-    "id": "da2005",
-    "type": "debug",
-    "name": "Result",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "true",
-    "targetType": "msg",
-    "statusVal": "",
-    "statusType": "auto",
-    "x": 750,
-    "y": 740,
-    "wires": []
-  }
+    {
+        "id": "da2000",
+        "type": "tab",
+        "label": "directory-action 02 \u00b7 Dynamic actions",
+        "disabled": true,
+        "info": "**Choose the folder action per message**\n\nWith **Load from msg.file**, each message names its action and path: create, list, then delete.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory`.\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_DIR`: a folder created only for this example (**it is deleted recursively**)\n- `NODE_RED_EXAMPLE_DIR_NESTED`: a folder inside `NODE_RED_EXAMPLE_DIR`, to create (with missing parents)\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then click **Dynamic create**, **Dynamic list** and **Dynamic delete** in this order.\n\n**Effects:** Creates folders; the delete removes `NODE_RED_EXAMPLE_DIR` recursively and is not undone. Deploying does nothing until you click.\n\n**Expected result:** the list shows the nested folder in `msg.file.contents`.\n\n**Cleanup:** the delete button is the cleanup.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor."
+    },
+    {
+        "id": "da2006",
+        "type": "comment",
+        "z": "da2000",
+        "name": "Dynamic actions (see the tab's description)",
+        "info": "**Choose the folder action per message**\n\nWith **Load from msg.file**, each message names its action and path: create, list, then delete.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory`.\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_DIR`: a folder created only for this example (**it is deleted recursively**)\n- `NODE_RED_EXAMPLE_DIR_NESTED`: a folder inside `NODE_RED_EXAMPLE_DIR`, to create (with missing parents)\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then click **Dynamic create**, **Dynamic list** and **Dynamic delete** in this order.\n\n**Effects:** Creates folders; the delete removes `NODE_RED_EXAMPLE_DIR` recursively and is not undone. Deploying does nothing until you click.\n\n**Expected result:** the list shows the nested folder in `msg.file.contents`.\n\n**Cleanup:** the delete button is the cleanup.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor.",
+        "x": 220,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "da2001",
+        "type": "inject",
+        "name": "Dynamic create",
+        "props": [
+            {
+                "p": "file",
+                "v": "{\"action\": \"create\", \"path\": $env(\"NODE_RED_EXAMPLE_DIR_NESTED\"), \"recursive\": true}",
+                "vt": "jsonata"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 280,
+        "y": 680,
+        "wires": [
+            [
+                "da2004"
+            ]
+        ],
+        "z": "da2000"
+    },
+    {
+        "id": "da2002",
+        "type": "inject",
+        "name": "Dynamic list",
+        "props": [
+            {
+                "p": "file",
+                "v": "{\"action\": \"list\", \"path\": $env(\"NODE_RED_EXAMPLE_DIR\")}",
+                "vt": "jsonata"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 270,
+        "y": 740,
+        "wires": [
+            [
+                "da2004"
+            ]
+        ],
+        "z": "da2000"
+    },
+    {
+        "id": "da2003",
+        "type": "inject",
+        "name": "Dynamic delete",
+        "props": [
+            {
+                "p": "file",
+                "v": "{\"action\": \"delete\", \"path\": $env(\"NODE_RED_EXAMPLE_DIR\"), \"recursive\": true}",
+                "vt": "jsonata"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 280,
+        "y": 800,
+        "wires": [
+            [
+                "da2004"
+            ]
+        ],
+        "z": "da2000"
+    },
+    {
+        "id": "da2004",
+        "type": "directory-action",
+        "name": "Dynamic directory action",
+        "dynamic": true,
+        "action": "list",
+        "source": "",
+        "sourceType": "str",
+        "property": "file",
+        "propertyType": "msg",
+        "recursive": false,
+        "x": 530,
+        "y": 740,
+        "wires": [
+            [
+                "da2005"
+            ]
+        ],
+        "z": "da2000"
+    },
+    {
+        "id": "da2005",
+        "type": "debug",
+        "name": "Result",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 750,
+        "y": 740,
+        "wires": [],
+        "z": "da2000"
+    }
 ]

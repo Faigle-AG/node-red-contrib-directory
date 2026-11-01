@@ -1,61 +1,81 @@
 [
-  {
-    "id": "da3001",
-    "type": "inject",
-    "name": "List test/data",
-    "props": [
-      {
-        "p": "payload"
-      }
-    ],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "payload": "",
-    "payloadType": "date",
-    "x": 260,
-    "y": 740,
-    "wires": [
-      [
-        "da3002"
-      ]
-    ]
-  },
-  {
-    "id": "da3002",
-    "type": "directory-action",
-    "name": "List to msg.result",
-    "dynamic": false,
-    "action": "list",
-    "source": "./test/data",
-    "sourceType": "str",
-    "property": "result",
-    "propertyType": "msg",
-    "recursive": false,
-    "x": 510,
-    "y": 740,
-    "wires": [
-      [
-        "da3003"
-      ]
-    ]
-  },
-  {
-    "id": "da3003",
-    "type": "debug",
-    "name": "msg.result",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "result",
-    "targetType": "msg",
-    "statusVal": "",
-    "statusType": "auto",
-    "x": 750,
-    "y": 740,
-    "wires": []
-  }
+    {
+        "id": "da3000",
+        "type": "tab",
+        "label": "directory-action 03 \u00b7 Custom output",
+        "disabled": true,
+        "info": "**List a folder into msg.result**\n\nLists the example folder and writes the result to `msg.result` instead of `msg.file`.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory`.\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_DIR`: a folder created only for this example (**it is deleted recursively**)\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then click **List test/data** (the original name; it now lists your folder).\n\n**Effects:** Read-only. Deploying does nothing until you click.\n\n**Expected result:** `msg.result.contents` with the folder entries.\n\n**Cleanup:** none needed.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor."
+    },
+    {
+        "id": "da3004",
+        "type": "comment",
+        "z": "da3000",
+        "name": "Custom output (see the tab's description)",
+        "info": "**List a folder into msg.result**\n\nLists the example folder and writes the result to `msg.result` instead of `msg.file`.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory`.\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_DIR`: a folder created only for this example (**it is deleted recursively**)\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then click **List test/data** (the original name; it now lists your folder).\n\n**Effects:** Read-only. Deploying does nothing until you click.\n\n**Expected result:** `msg.result.contents` with the folder entries.\n\n**Cleanup:** none needed.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor.",
+        "x": 220,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "da3001",
+        "type": "inject",
+        "name": "List test/data",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 260,
+        "y": 740,
+        "wires": [
+            [
+                "da3002"
+            ]
+        ],
+        "z": "da3000"
+    },
+    {
+        "id": "da3002",
+        "type": "directory-action",
+        "name": "List to msg.result",
+        "dynamic": false,
+        "action": "list",
+        "source": "NODE_RED_EXAMPLE_DIR",
+        "sourceType": "env",
+        "property": "result",
+        "propertyType": "msg",
+        "recursive": false,
+        "x": 510,
+        "y": 740,
+        "wires": [
+            [
+                "da3003"
+            ]
+        ],
+        "z": "da3000"
+    },
+    {
+        "id": "da3003",
+        "type": "debug",
+        "name": "msg.result",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "result",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 750,
+        "y": 740,
+        "wires": [],
+        "z": "da3000"
+    }
 ]

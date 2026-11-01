@@ -1,115 +1,138 @@
 [
-  {
-    "id": "dw2001",
-    "type": "directory-watch",
-    "name": "Watch test/data directories",
-    "source": "./test/data",
-    "sourceType": "str",
-    "target": "file",
-    "targetType": "msg",
-    "depth": 0,
-    "watchAdd": true,
-    "watchChange": false,
-    "watchDelete": true,
-    "filterFiles": false,
-    "filterDirs": true,
-    "awaitWriteFinish": false,
-    "stabilityThreshold": 500,
-    "ignoreInitial": true,
-    "ignoredFiles": "",
-    "ignoredFilesType": "re",
-    "x": 270,
-    "y": 140,
-    "wires": [
-      [
-        "dw2002"
-      ]
-    ]
-  },
-  {
-    "id": "dw2002",
-    "type": "debug",
-    "name": "msg.file",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "file",
-    "targetType": "msg",
-    "statusVal": "",
-    "statusType": "auto",
-    "x": 500,
-    "y": 140,
-    "wires": []
-  },
-  {
-    "id": "dw2010",
-    "type": "inject",
-    "name": "Create watched directory",
-    "props": [],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 270,
-    "y": 240,
-    "wires": [
-      [
-        "dw2011"
-      ]
-    ]
-  },
-  {
-    "id": "dw2011",
-    "type": "directory-action",
-    "name": "Create watched directory",
-    "dynamic": false,
-    "action": "create",
-    "source": "./test/data/directory-watch-example",
-    "sourceType": "str",
-    "property": "file.content",
-    "propertyType": "msg",
-    "recursive": false,
-    "x": 550,
-    "y": 240,
-    "wires": [
-      []
-    ]
-  },
-  {
-    "id": "dw2020",
-    "type": "inject",
-    "name": "Delete watched directory",
-    "props": [],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 270,
-    "y": 300,
-    "wires": [
-      [
-        "dw2021"
-      ]
-    ]
-  },
-  {
-    "id": "dw2021",
-    "type": "directory-action",
-    "name": "Delete watched directory",
-    "dynamic": false,
-    "action": "delete",
-    "source": "./test/data/directory-watch-example",
-    "sourceType": "str",
-    "property": "file.content",
-    "propertyType": "msg",
-    "recursive": true,
-    "x": 550,
-    "y": 300,
-    "wires": [
-      []
-    ]
-  }
+    {
+        "id": "dw2000",
+        "type": "tab",
+        "label": "directory-watch 02 \u00b7 Watch directories",
+        "disabled": true,
+        "info": "**Watch a folder for sub-folder changes**\n\nThe watcher starts **as soon as the tab is deployed** and reports folders added or removed inside the watched folder to `msg.file`. The buttons create and delete one sub-folder.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory`.\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_WATCH_DIR`: a disposable folder to watch (it must exist)\n- `NODE_RED_EXAMPLE_WATCH_SUBDIR`: a folder path inside the watched folder\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then use the two buttons in order.\n\n**Effects:** Deploying starts the watcher. The buttons create and recursively delete the sub-folder; the delete is not undone.\n\n**Expected result:** `msg.file` with `action` `add` and then `delete`, and `filetype: directory`.\n\n**Cleanup:** the delete button removes the sub-folder; delete the watched folder when you are done.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor."
+    },
+    {
+        "id": "dw2030",
+        "type": "comment",
+        "z": "dw2000",
+        "name": "Watch directories (see the tab's description)",
+        "info": "**Watch a folder for sub-folder changes**\n\nThe watcher starts **as soon as the tab is deployed** and reports folders added or removed inside the watched folder to `msg.file`. The buttons create and delete one sub-folder.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory`.\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_WATCH_DIR`: a disposable folder to watch (it must exist)\n- `NODE_RED_EXAMPLE_WATCH_SUBDIR`: a folder path inside the watched folder\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then use the two buttons in order.\n\n**Effects:** Deploying starts the watcher. The buttons create and recursively delete the sub-folder; the delete is not undone.\n\n**Expected result:** `msg.file` with `action` `add` and then `delete`, and `filetype: directory`.\n\n**Cleanup:** the delete button removes the sub-folder; delete the watched folder when you are done.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor.",
+        "x": 220,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "dw2001",
+        "type": "directory-watch",
+        "name": "Watch test/data directories",
+        "source": "($d := $env(\"NODE_RED_EXAMPLE_WATCH_DIR\"); $d ? $d : null)",
+        "sourceType": "jsonata",
+        "target": "file",
+        "targetType": "msg",
+        "depth": 0,
+        "watchAdd": true,
+        "watchChange": false,
+        "watchDelete": true,
+        "filterFiles": false,
+        "filterDirs": true,
+        "awaitWriteFinish": false,
+        "stabilityThreshold": 500,
+        "ignoreInitial": true,
+        "ignoredFiles": "",
+        "ignoredFilesType": "re",
+        "x": 270,
+        "y": 140,
+        "wires": [
+            [
+                "dw2002"
+            ]
+        ],
+        "z": "dw2000"
+    },
+    {
+        "id": "dw2002",
+        "type": "debug",
+        "name": "msg.file",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "file",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 500,
+        "y": 140,
+        "wires": [],
+        "z": "dw2000"
+    },
+    {
+        "id": "dw2010",
+        "type": "inject",
+        "name": "Create watched directory",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 270,
+        "y": 240,
+        "wires": [
+            [
+                "dw2011"
+            ]
+        ],
+        "z": "dw2000"
+    },
+    {
+        "id": "dw2011",
+        "type": "directory-action",
+        "name": "Create watched directory",
+        "dynamic": false,
+        "action": "create",
+        "source": "NODE_RED_EXAMPLE_WATCH_SUBDIR",
+        "sourceType": "env",
+        "property": "file.content",
+        "propertyType": "msg",
+        "recursive": false,
+        "x": 550,
+        "y": 240,
+        "wires": [
+            []
+        ],
+        "z": "dw2000"
+    },
+    {
+        "id": "dw2020",
+        "type": "inject",
+        "name": "Delete watched directory",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 270,
+        "y": 300,
+        "wires": [
+            [
+                "dw2021"
+            ]
+        ],
+        "z": "dw2000"
+    },
+    {
+        "id": "dw2021",
+        "type": "directory-action",
+        "name": "Delete watched directory",
+        "dynamic": false,
+        "action": "delete",
+        "source": "NODE_RED_EXAMPLE_WATCH_SUBDIR",
+        "sourceType": "env",
+        "property": "file.content",
+        "propertyType": "msg",
+        "recursive": true,
+        "x": 550,
+        "y": 300,
+        "wires": [
+            []
+        ],
+        "z": "dw2000"
+    }
 ]

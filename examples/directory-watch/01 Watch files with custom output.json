@@ -1,162 +1,187 @@
 [
-  {
-    "id": "dw1001",
-    "type": "directory-watch",
-    "name": "Watch test/data files",
-    "source": "./test/data",
-    "sourceType": "str",
-    "target": "watchEvent",
-    "targetType": "msg",
-    "depth": 0,
-    "watchAdd": true,
-    "watchChange": true,
-    "watchDelete": true,
-    "filterFiles": true,
-    "filterDirs": false,
-    "awaitWriteFinish": true,
-    "stabilityThreshold": 500,
-    "ignoreInitial": true,
-    "ignoredFiles": "",
-    "ignoredFilesType": "re",
-    "x": 230,
-    "y": 100,
-    "wires": [
-      [
-        "dw1002"
-      ]
-    ]
-  },
-  {
-    "id": "dw1002",
-    "type": "debug",
-    "name": "msg.watchEvent",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "watchEvent",
-    "targetType": "msg",
-    "statusVal": "",
-    "statusType": "auto",
-    "x": 480,
-    "y": 100,
-    "wires": []
-  },
-  {
-    "id": "dw1010",
-    "type": "inject",
-    "name": "Create / overwrite watched file",
-    "props": [
-      {
-        "p": "payload"
-      }
-    ],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "payload": "Created by directory-watch example",
-    "payloadType": "str",
-    "x": 260,
-    "y": 180,
-    "wires": [
-      [
-        "dw1011"
-      ]
-    ]
-  },
-  {
-    "id": "dw1011",
-    "type": "file-write",
-    "name": "Write watched file",
-    "dynamic": false,
-    "action": "write",
-    "target": "./test/data/directory-watch-example.txt",
-    "targetType": "str",
-    "data": "payload",
-    "dataType": "msg",
-    "createDir": true,
-    "x": 550,
-    "y": 180,
-    "wires": [
-      []
-    ]
-  },
-  {
-    "id": "dw1020",
-    "type": "inject",
-    "name": "Append watched file",
-    "props": [
-      {
-        "p": "payload"
-      }
-    ],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "payload": "Changed by directory-watch example",
-    "payloadType": "str",
-    "x": 230,
-    "y": 240,
-    "wires": [
-      [
-        "dw1021"
-      ]
-    ]
-  },
-  {
-    "id": "dw1021",
-    "type": "file-write",
-    "name": "Append watched file",
-    "dynamic": false,
-    "action": "append",
-    "target": "./test/data/directory-watch-example.txt",
-    "targetType": "str",
-    "data": "payload",
-    "dataType": "msg",
-    "createDir": true,
-    "x": 540,
-    "y": 240,
-    "wires": [
-      []
-    ]
-  },
-  {
-    "id": "dw1030",
-    "type": "inject",
-    "name": "Delete watched file",
-    "props": [],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 230,
-    "y": 300,
-    "wires": [
-      [
-        "dw1031"
-      ]
-    ]
-  },
-  {
-    "id": "dw1031",
-    "type": "file-transfer",
-    "name": "Delete watched file",
-    "dynamic": false,
-    "action": "delete",
-    "source": "./test/data/directory-watch-example.txt",
-    "sourceType": "str",
-    "destination": "",
-    "destinationType": "str",
-    "createDir": false,
-    "x": 550,
-    "y": 300,
-    "wires": [
-      []
-    ]
-  }
+    {
+        "id": "dw1000",
+        "type": "tab",
+        "label": "directory-watch 01 \u00b7 Watch files with custom output",
+        "disabled": true,
+        "info": "**Watch a folder for file changes**\n\nThe watcher starts **as soon as the tab is deployed** (no button needed) and reports file events to `msg.watchEvent`. The buttons create, append to and delete a file inside the watched folder.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory` and, for the buttons, `@faigle/node-red-contrib-file` (its file-write and file-transfer nodes).\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_WATCH_DIR`: a disposable folder to watch (it must exist)\n- `NODE_RED_EXAMPLE_WATCH_FILE`: a file path inside the watched folder\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then use the three buttons in order.\n\n**Effects:** Deploying starts the watcher. The buttons create, change and delete the watched file; the delete is not undone.\n\n**Expected result:** `msg.watchEvent` with `action` `add`, `change` and `delete` and `filetype: file`.\n\n**Cleanup:** the delete button removes the file; delete the watched folder when you are done.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor."
+    },
+    {
+        "id": "dw1040",
+        "type": "comment",
+        "z": "dw1000",
+        "name": "Watch files with custom output (see the tab's description)",
+        "info": "**Watch a folder for file changes**\n\nThe watcher starts **as soon as the tab is deployed** (no button needed) and reports file events to `msg.watchEvent`. The buttons create, append to and delete a file inside the watched folder.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory` and, for the buttons, `@faigle/node-red-contrib-file` (its file-write and file-transfer nodes).\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_WATCH_DIR`: a disposable folder to watch (it must exist)\n- `NODE_RED_EXAMPLE_WATCH_FILE`: a file path inside the watched folder\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then use the three buttons in order.\n\n**Effects:** Deploying starts the watcher. The buttons create, change and delete the watched file; the delete is not undone.\n\n**Expected result:** `msg.watchEvent` with `action` `add`, `change` and `delete` and `filetype: file`.\n\n**Cleanup:** the delete button removes the file; delete the watched folder when you are done.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor.",
+        "x": 220,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "dw1001",
+        "type": "directory-watch",
+        "name": "Watch test/data files",
+        "source": "($d := $env(\"NODE_RED_EXAMPLE_WATCH_DIR\"); $d ? $d : null)",
+        "sourceType": "jsonata",
+        "target": "watchEvent",
+        "targetType": "msg",
+        "depth": 0,
+        "watchAdd": true,
+        "watchChange": true,
+        "watchDelete": true,
+        "filterFiles": true,
+        "filterDirs": false,
+        "awaitWriteFinish": true,
+        "stabilityThreshold": 500,
+        "ignoreInitial": true,
+        "ignoredFiles": "",
+        "ignoredFilesType": "re",
+        "x": 230,
+        "y": 100,
+        "wires": [
+            [
+                "dw1002"
+            ]
+        ],
+        "z": "dw1000"
+    },
+    {
+        "id": "dw1002",
+        "type": "debug",
+        "name": "msg.watchEvent",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "watchEvent",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 480,
+        "y": 100,
+        "wires": [],
+        "z": "dw1000"
+    },
+    {
+        "id": "dw1010",
+        "type": "inject",
+        "name": "Create / overwrite watched file",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Created by directory-watch example",
+        "payloadType": "str",
+        "x": 260,
+        "y": 180,
+        "wires": [
+            [
+                "dw1011"
+            ]
+        ],
+        "z": "dw1000"
+    },
+    {
+        "id": "dw1011",
+        "type": "file-write",
+        "name": "Write watched file",
+        "dynamic": false,
+        "action": "write",
+        "target": "NODE_RED_EXAMPLE_WATCH_FILE",
+        "targetType": "env",
+        "data": "payload",
+        "dataType": "msg",
+        "createDir": true,
+        "x": 550,
+        "y": 180,
+        "wires": [
+            []
+        ],
+        "z": "dw1000"
+    },
+    {
+        "id": "dw1020",
+        "type": "inject",
+        "name": "Append watched file",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Changed by directory-watch example",
+        "payloadType": "str",
+        "x": 230,
+        "y": 240,
+        "wires": [
+            [
+                "dw1021"
+            ]
+        ],
+        "z": "dw1000"
+    },
+    {
+        "id": "dw1021",
+        "type": "file-write",
+        "name": "Append watched file",
+        "dynamic": false,
+        "action": "append",
+        "target": "NODE_RED_EXAMPLE_WATCH_FILE",
+        "targetType": "env",
+        "data": "payload",
+        "dataType": "msg",
+        "createDir": true,
+        "x": 540,
+        "y": 240,
+        "wires": [
+            []
+        ],
+        "z": "dw1000"
+    },
+    {
+        "id": "dw1030",
+        "type": "inject",
+        "name": "Delete watched file",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 230,
+        "y": 300,
+        "wires": [
+            [
+                "dw1031"
+            ]
+        ],
+        "z": "dw1000"
+    },
+    {
+        "id": "dw1031",
+        "type": "file-transfer",
+        "name": "Delete watched file",
+        "dynamic": false,
+        "action": "delete",
+        "source": "NODE_RED_EXAMPLE_WATCH_FILE",
+        "sourceType": "env",
+        "destination": "",
+        "destinationType": "str",
+        "createDir": false,
+        "x": 550,
+        "y": 300,
+        "wires": [
+            []
+        ],
+        "z": "dw1000"
+    }
 ]

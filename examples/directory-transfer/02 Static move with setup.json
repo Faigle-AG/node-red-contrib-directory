@@ -1,74 +1,95 @@
 [
-  {
-    "id": "dt2001",
-    "type": "inject",
-    "name": "Create source directory",
-    "props": [],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 240,
-    "y": 980,
-    "wires": [
-      [
-        "dt2002"
-      ]
-    ]
-  },
-  {
-    "id": "dt2002",
-    "type": "directory-action",
-    "name": "Create source",
-    "dynamic": false,
-    "action": "create",
-    "source": "./test/data/directory-transfer-move/source",
-    "sourceType": "str",
-    "property": "file.content",
-    "propertyType": "msg",
-    "recursive": true,
-    "x": 470,
-    "y": 980,
-    "wires": [
-      [
-        "dt2003"
-      ]
-    ]
-  },
-  {
-    "id": "dt2003",
-    "type": "directory-transfer",
-    "name": "Move directory",
-    "dynamic": false,
-    "action": "move",
-    "source": "./test/data/directory-transfer-move/source",
-    "sourceType": "str",
-    "destination": "./test/data/directory-transfer-move/archive/moved",
-    "destinationType": "str",
-    "recursive": true,
-    "x": 700,
-    "y": 980,
-    "wires": [
-      [
-        "dt2004"
-      ]
-    ]
-  },
-  {
-    "id": "dt2004",
-    "type": "debug",
-    "name": "Transfer result",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "file",
-    "targetType": "msg",
-    "statusVal": "",
-    "statusType": "auto",
-    "x": 930,
-    "y": 980,
-    "wires": []
-  }
+    {
+        "id": "dt2000",
+        "type": "tab",
+        "label": "directory-transfer 02 \u00b7 Static move with setup",
+        "disabled": true,
+        "info": "**Create a folder, then move it**\n\nOne button creates the source folder and then moves it, in that order.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory`.\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_DIR_MOVE_SOURCE`: a disposable folder path to create and move from\n- `NODE_RED_EXAMPLE_DIR_MOVED`: a disposable folder path the folder is moved to\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then click **Create source directory**.\n\n**Effects:** Creates the source, then moves it (the source no longer exists afterwards). Deploying does nothing until you click.\n\n**Expected result:** `msg.file` describing the moved folder.\n\n**Cleanup:** delete the moved folder.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor."
+    },
+    {
+        "id": "dt2005",
+        "type": "comment",
+        "z": "dt2000",
+        "name": "Static move with setup (see the tab's description)",
+        "info": "**Create a folder, then move it**\n\nOne button creates the source folder and then moves it, in that order.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory`.\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_DIR_MOVE_SOURCE`: a disposable folder path to create and move from\n- `NODE_RED_EXAMPLE_DIR_MOVED`: a disposable folder path the folder is moved to\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then click **Create source directory**.\n\n**Effects:** Creates the source, then moves it (the source no longer exists afterwards). Deploying does nothing until you click.\n\n**Expected result:** `msg.file` describing the moved folder.\n\n**Cleanup:** delete the moved folder.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor.",
+        "x": 220,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "dt2001",
+        "type": "inject",
+        "name": "Create source directory",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 240,
+        "y": 980,
+        "wires": [
+            [
+                "dt2002"
+            ]
+        ],
+        "z": "dt2000"
+    },
+    {
+        "id": "dt2002",
+        "type": "directory-action",
+        "name": "Create source",
+        "dynamic": false,
+        "action": "create",
+        "source": "NODE_RED_EXAMPLE_DIR_MOVE_SOURCE",
+        "sourceType": "env",
+        "property": "file.content",
+        "propertyType": "msg",
+        "recursive": true,
+        "x": 470,
+        "y": 980,
+        "wires": [
+            [
+                "dt2003"
+            ]
+        ],
+        "z": "dt2000"
+    },
+    {
+        "id": "dt2003",
+        "type": "directory-transfer",
+        "name": "Move directory",
+        "dynamic": false,
+        "action": "move",
+        "source": "NODE_RED_EXAMPLE_DIR_MOVE_SOURCE",
+        "sourceType": "env",
+        "destination": "NODE_RED_EXAMPLE_DIR_MOVED",
+        "destinationType": "env",
+        "recursive": true,
+        "x": 700,
+        "y": 980,
+        "wires": [
+            [
+                "dt2004"
+            ]
+        ],
+        "z": "dt2000"
+    },
+    {
+        "id": "dt2004",
+        "type": "debug",
+        "name": "Transfer result",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "file",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 930,
+        "y": 980,
+        "wires": [],
+        "z": "dt2000"
+    }
 ]

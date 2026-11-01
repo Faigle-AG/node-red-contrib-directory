@@ -1,161 +1,187 @@
 [
-  {
-    "id": "da1001",
-    "type": "inject",
-    "name": "Create nested directory",
-    "props": [],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 280,
-    "y": 240,
-    "wires": [
-      [
-        "da1002"
-      ]
-    ]
-  },
-  {
-    "id": "da1002",
-    "type": "directory-action",
-    "name": "Create directory",
-    "dynamic": false,
-    "action": "create",
-    "source": "./test/data/directory-action-example/nested",
-    "sourceType": "str",
-    "property": "file.content",
-    "propertyType": "msg",
-    "recursive": true,
-    "x": 540,
-    "y": 240,
-    "wires": [
-      [
-        "da1003"
-      ]
-    ]
-  },
-  {
-    "id": "da1003",
-    "type": "debug",
-    "name": "Create result",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "true",
-    "targetType": "msg",
-    "statusVal": "",
-    "statusType": "auto",
-    "x": 780,
-    "y": 240,
-    "wires": []
-  },
-  {
-    "id": "da1011",
-    "type": "inject",
-    "name": "List example directory",
-    "props": [],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 280,
-    "y": 320,
-    "wires": [
-      [
-        "da1012"
-      ]
-    ]
-  },
-  {
-    "id": "da1012",
-    "type": "directory-action",
-    "name": "List directory",
-    "dynamic": false,
-    "action": "list",
-    "source": "./test/data/directory-action-example",
-    "sourceType": "str",
-    "property": "file",
-    "propertyType": "msg",
-    "recursive": false,
-    "x": 530,
-    "y": 320,
-    "wires": [
-      [
-        "da1013"
-      ]
-    ]
-  },
-  {
-    "id": "da1013",
-    "type": "debug",
-    "name": "List result",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "true",
-    "targetType": "msg",
-    "statusVal": "",
-    "statusType": "auto",
-    "x": 780,
-    "y": 320,
-    "wires": []
-  },
-  {
-    "id": "da1021",
-    "type": "inject",
-    "name": "Delete nested directory",
-    "props": [],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 280,
-    "y": 400,
-    "wires": [
-      [
-        "da1022"
-      ]
-    ]
-  },
-  {
-    "id": "da1022",
-    "type": "directory-action",
-    "name": "Delete directory",
-    "dynamic": false,
-    "action": "delete",
-    "source": "./test/data/directory-action-example",
-    "sourceType": "str",
-    "property": "file.content",
-    "propertyType": "msg",
-    "recursive": true,
-    "x": 540,
-    "y": 400,
-    "wires": [
-      [
-        "da1023"
-      ]
-    ]
-  },
-  {
-    "id": "da1023",
-    "type": "debug",
-    "name": "Delete result",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "true",
-    "targetType": "msg",
-    "statusVal": "",
-    "statusType": "auto",
-    "x": 790,
-    "y": 400,
-    "wires": []
-  }
+    {
+        "id": "da1000",
+        "type": "tab",
+        "label": "directory-action 01 \u00b7 Static create-list-delete",
+        "disabled": true,
+        "info": "**Create, list and delete a folder**\n\nThree buttons: create a nested folder (with missing parents), list the example folder, and delete it recursively.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory`.\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_DIR`: a folder created only for this example (**it is deleted recursively**)\n- `NODE_RED_EXAMPLE_DIR_NESTED`: a folder inside `NODE_RED_EXAMPLE_DIR`, to create (with missing parents)\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then click **Create nested directory**, **List example directory** and **Delete nested directory** in this order.\n\n**Effects:** Creates folders; the delete removes `NODE_RED_EXAMPLE_DIR` and everything in it, and is not undone. Deploying does nothing until you click.\n\n**Expected result:** `msg.file.content: true` after create and delete; the list shows the nested folder in `msg.file.contents`.\n\n**Cleanup:** the delete button is the cleanup.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor."
+    },
+    {
+        "id": "da1004",
+        "type": "comment",
+        "z": "da1000",
+        "name": "Static create-list-delete (see the tab's description)",
+        "info": "**Create, list and delete a folder**\n\nThree buttons: create a nested folder (with missing parents), list the example folder, and delete it recursively.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory`.\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_DIR`: a folder created only for this example (**it is deleted recursively**)\n- `NODE_RED_EXAMPLE_DIR_NESTED`: a folder inside `NODE_RED_EXAMPLE_DIR`, to create (with missing parents)\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then click **Create nested directory**, **List example directory** and **Delete nested directory** in this order.\n\n**Effects:** Creates folders; the delete removes `NODE_RED_EXAMPLE_DIR` and everything in it, and is not undone. Deploying does nothing until you click.\n\n**Expected result:** `msg.file.content: true` after create and delete; the list shows the nested folder in `msg.file.contents`.\n\n**Cleanup:** the delete button is the cleanup.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor.",
+        "x": 220,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "da1001",
+        "type": "inject",
+        "name": "Create nested directory",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 280,
+        "y": 240,
+        "wires": [
+            [
+                "da1002"
+            ]
+        ],
+        "z": "da1000"
+    },
+    {
+        "id": "da1002",
+        "type": "directory-action",
+        "name": "Create directory",
+        "dynamic": false,
+        "action": "create",
+        "source": "NODE_RED_EXAMPLE_DIR_NESTED",
+        "sourceType": "env",
+        "property": "file.content",
+        "propertyType": "msg",
+        "recursive": true,
+        "x": 540,
+        "y": 240,
+        "wires": [
+            [
+                "da1003"
+            ]
+        ],
+        "z": "da1000"
+    },
+    {
+        "id": "da1003",
+        "type": "debug",
+        "name": "Create result",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 780,
+        "y": 240,
+        "wires": [],
+        "z": "da1000"
+    },
+    {
+        "id": "da1011",
+        "type": "inject",
+        "name": "List example directory",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 280,
+        "y": 320,
+        "wires": [
+            [
+                "da1012"
+            ]
+        ],
+        "z": "da1000"
+    },
+    {
+        "id": "da1012",
+        "type": "directory-action",
+        "name": "List directory",
+        "dynamic": false,
+        "action": "list",
+        "source": "NODE_RED_EXAMPLE_DIR",
+        "sourceType": "env",
+        "property": "file",
+        "propertyType": "msg",
+        "recursive": false,
+        "x": 530,
+        "y": 320,
+        "wires": [
+            [
+                "da1013"
+            ]
+        ],
+        "z": "da1000"
+    },
+    {
+        "id": "da1013",
+        "type": "debug",
+        "name": "List result",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 780,
+        "y": 320,
+        "wires": [],
+        "z": "da1000"
+    },
+    {
+        "id": "da1021",
+        "type": "inject",
+        "name": "Delete nested directory",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 280,
+        "y": 400,
+        "wires": [
+            [
+                "da1022"
+            ]
+        ],
+        "z": "da1000"
+    },
+    {
+        "id": "da1022",
+        "type": "directory-action",
+        "name": "Delete directory",
+        "dynamic": false,
+        "action": "delete",
+        "source": "NODE_RED_EXAMPLE_DIR",
+        "sourceType": "env",
+        "property": "file.content",
+        "propertyType": "msg",
+        "recursive": true,
+        "x": 540,
+        "y": 400,
+        "wires": [
+            [
+                "da1023"
+            ]
+        ],
+        "z": "da1000"
+    },
+    {
+        "id": "da1023",
+        "type": "debug",
+        "name": "Delete result",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 790,
+        "y": 400,
+        "wires": [],
+        "z": "da1000"
+    }
 ]

@@ -1,152 +1,177 @@
 [
-  {
-    "id": "dt3001",
-    "type": "inject",
-    "name": "Setup source for copy",
-    "props": [],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 240,
-    "y": 1100,
-    "wires": [
-      [
-        "dt3002"
-      ]
-    ]
-  },
-  {
-    "id": "dt3002",
-    "type": "directory-action",
-    "name": "Create copy source",
-    "dynamic": false,
-    "action": "create",
-    "source": "./test/data/directory-transfer-dynamic/source-copy",
-    "sourceType": "str",
-    "property": "file.content",
-    "propertyType": "msg",
-    "x": 470,
-    "y": 1100,
-    "wires": [
-      []
-    ]
-  },
-  {
-    "id": "dt3004",
-    "type": "inject",
-    "name": "Dynamic copy",
-    "props": [
-      {
-        "p": "file",
-        "v": "{\"action\":\"copy\",\"source\":\"./test/data/directory-transfer-dynamic/source-copy\",\"destination\":\"./test/data/directory-transfer-dynamic/copied\",\"recursive\":true}",
-        "vt": "json"
-      }
-    ],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 730,
-    "y": 1100,
-    "wires": [
-      [
-        "dt3006"
-      ]
-    ]
-  },
-  {
-    "id": "dt3007",
-    "type": "inject",
-    "name": "Setup source for move",
-    "props": [],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 240,
-    "y": 1160,
-    "wires": [
-      [
-        "dt3008"
-      ]
-    ]
-  },
-  {
-    "id": "dt3008",
-    "type": "directory-action",
-    "name": "Create move source",
-    "dynamic": false,
-    "action": "create",
-    "source": "./test/data/directory-transfer-dynamic/source-move",
-    "sourceType": "str",
-    "property": "file.content",
-    "propertyType": "msg",
-    "x": 480,
-    "y": 1160,
-    "wires": [
-      []
-    ]
-  },
-  {
-    "id": "dt3010",
-    "type": "inject",
-    "name": "Dynamic move",
-    "props": [
-      {
-        "p": "file",
-        "v": "{\"action\":\"move\",\"source\":\"./test/data/directory-transfer-dynamic/source-move\",\"destination\":\"./test/data/directory-transfer-dynamic/moved\",\"recursive\":true}",
-        "vt": "json"
-      }
-    ],
-    "repeat": "",
-    "crontab": "",
-    "once": false,
-    "onceDelay": 0.1,
-    "topic": "",
-    "x": 740,
-    "y": 1160,
-    "wires": [
-      [
-        "dt3006"
-      ]
-    ]
-  },
-  {
-    "id": "dt3006",
-    "type": "directory-transfer",
-    "name": "Dynamic directory transfer",
-    "dynamic": true,
-    "action": "move",
-    "source": "",
-    "sourceType": "str",
-    "destination": "",
-    "destinationType": "str",
-    "x": 1030,
-    "y": 1140,
-    "wires": [
-      [
-        "dt3011"
-      ]
-    ]
-  },
-  {
-    "id": "dt3011",
-    "type": "debug",
-    "name": "Transfer result",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "file",
-    "targetType": "msg",
-    "statusVal": "",
-    "statusType": "auto",
-    "x": 1280,
-    "y": 1140,
-    "wires": []
-  }
+    {
+        "id": "dt3000",
+        "type": "tab",
+        "label": "directory-transfer 03 \u00b7 Dynamic copy-move",
+        "disabled": true,
+        "info": "**Copy and move per message**\n\nTwo setup buttons create the sources; with **Load from msg.file**, the copy and move messages name their own paths.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory`.\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_DIR_SOURCE`: a disposable folder path to create and copy from\n- `NODE_RED_EXAMPLE_DIR_COPY`: a disposable folder path for the copy\n- `NODE_RED_EXAMPLE_DIR_MOVE_SOURCE`: a disposable folder path to create and move from\n- `NODE_RED_EXAMPLE_DIR_MOVED`: a disposable folder path the folder is moved to\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then click **Setup source for copy**, **Dynamic copy**, **Setup source for move** and **Dynamic move** in this order.\n\n**Effects:** Creates the sources, the copy and the moved folder. Deploying does nothing until you click.\n\n**Expected result:** `msg.file` after the copy and after the move.\n\n**Cleanup:** delete the four folders.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor."
+    },
+    {
+        "id": "dt3012",
+        "type": "comment",
+        "z": "dt3000",
+        "name": "Dynamic copy-move (see the tab's description)",
+        "info": "**Copy and move per message**\n\nTwo setup buttons create the sources; with **Load from msg.file**, the copy and move messages name their own paths.\n\n**Prerequisites:** `@faigle/node-red-contrib-directory`.\n\n**Setup:** before you start Node-RED, set these environment variables to **absolute** paths in a\ndisposable location. A literal `~` or `${...}` is not expanded:\n- `NODE_RED_EXAMPLE_DIR_SOURCE`: a disposable folder path to create and copy from\n- `NODE_RED_EXAMPLE_DIR_COPY`: a disposable folder path for the copy\n- `NODE_RED_EXAMPLE_DIR_MOVE_SOURCE`: a disposable folder path to create and move from\n- `NODE_RED_EXAMPLE_DIR_MOVED`: a disposable folder path the folder is moved to\n\nConfigure **all** listed variables before you enable the tab. Each node checks its own paths when the flow reaches it: if one is\nunset, that node reports its path as missing and stops (a watcher reports a start-up error and watches nothing), but earlier steps\nof the same click may already have created, copied or moved folders. Nothing is rolled back.\n\n**Activation:** this tab is disabled. Enable it, deploy, then click **Setup source for copy**, **Dynamic copy**, **Setup source for move** and **Dynamic move** in this order.\n\n**Effects:** Creates the sources, the copy and the moved folder. Deploying does nothing until you click.\n\n**Expected result:** `msg.file` after the copy and after the move.\n\n**Cleanup:** delete the four folders.\n\n**Not verified:** Windows paths, real file-system events, and behaviour in the editor.",
+        "x": 220,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "dt3001",
+        "type": "inject",
+        "name": "Setup source for copy",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 240,
+        "y": 1100,
+        "wires": [
+            [
+                "dt3002"
+            ]
+        ],
+        "z": "dt3000"
+    },
+    {
+        "id": "dt3002",
+        "type": "directory-action",
+        "name": "Create copy source",
+        "dynamic": false,
+        "action": "create",
+        "source": "NODE_RED_EXAMPLE_DIR_SOURCE",
+        "sourceType": "env",
+        "property": "file.content",
+        "propertyType": "msg",
+        "x": 470,
+        "y": 1100,
+        "wires": [
+            []
+        ],
+        "z": "dt3000"
+    },
+    {
+        "id": "dt3004",
+        "type": "inject",
+        "name": "Dynamic copy",
+        "props": [
+            {
+                "p": "file",
+                "v": "{\"action\": \"copy\", \"source\": $env(\"NODE_RED_EXAMPLE_DIR_SOURCE\"), \"destination\": $env(\"NODE_RED_EXAMPLE_DIR_COPY\"), \"recursive\": true}",
+                "vt": "jsonata"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 730,
+        "y": 1100,
+        "wires": [
+            [
+                "dt3006"
+            ]
+        ],
+        "z": "dt3000"
+    },
+    {
+        "id": "dt3007",
+        "type": "inject",
+        "name": "Setup source for move",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 240,
+        "y": 1160,
+        "wires": [
+            [
+                "dt3008"
+            ]
+        ],
+        "z": "dt3000"
+    },
+    {
+        "id": "dt3008",
+        "type": "directory-action",
+        "name": "Create move source",
+        "dynamic": false,
+        "action": "create",
+        "source": "NODE_RED_EXAMPLE_DIR_MOVE_SOURCE",
+        "sourceType": "env",
+        "property": "file.content",
+        "propertyType": "msg",
+        "x": 480,
+        "y": 1160,
+        "wires": [
+            []
+        ],
+        "z": "dt3000"
+    },
+    {
+        "id": "dt3010",
+        "type": "inject",
+        "name": "Dynamic move",
+        "props": [
+            {
+                "p": "file",
+                "v": "{\"action\": \"move\", \"source\": $env(\"NODE_RED_EXAMPLE_DIR_MOVE_SOURCE\"), \"destination\": $env(\"NODE_RED_EXAMPLE_DIR_MOVED\"), \"recursive\": true}",
+                "vt": "jsonata"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 740,
+        "y": 1160,
+        "wires": [
+            [
+                "dt3006"
+            ]
+        ],
+        "z": "dt3000"
+    },
+    {
+        "id": "dt3006",
+        "type": "directory-transfer",
+        "name": "Dynamic directory transfer",
+        "dynamic": true,
+        "action": "move",
+        "source": "",
+        "sourceType": "str",
+        "destination": "",
+        "destinationType": "str",
+        "x": 1030,
+        "y": 1140,
+        "wires": [
+            [
+                "dt3011"
+            ]
+        ],
+        "z": "dt3000"
+    },
+    {
+        "id": "dt3011",
+        "type": "debug",
+        "name": "Transfer result",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "file",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1280,
+        "y": 1140,
+        "wires": [],
+        "z": "dt3000"
+    }
 ]
